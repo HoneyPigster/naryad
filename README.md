@@ -4,6 +4,8 @@
 
 Постановка на свой Ubuntu: [docs/deploy.md](docs/deploy.md). О продукте: [docs/product-brief.md](docs/product-brief.md).
 
+Планируемое направление «Приёмка» (аудит, без реализации в коде): [docs/inspection/](docs/inspection/).
+
 Локально, если уже есть PostgreSQL 16 и Node.js 22:
 
 ```bash
