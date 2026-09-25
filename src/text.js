@@ -10,6 +10,7 @@ const ROLES = {
   client: 'Клиент',
   foreman: 'Прораб',
   master: 'Мастер',
+  inspector: 'Приёмка',
 };
 
 const KINDS = {
@@ -53,6 +54,7 @@ const HOME = {
   client: '/client',
   foreman: '/foreman',
   master: '/master',
+  inspector: '/inspection',
 };
 
 function normalizePhone(input) {

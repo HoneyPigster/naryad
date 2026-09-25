@@ -76,13 +76,20 @@ async function publicHome(req, res) {
 
 function askedRole(req) {
   const role = req.params.role || '';
-  return role === 'foreman' || role === 'master' ? role : '';
+  return role === 'foreman' || role === 'master' || role === 'inspector' ? role : '';
+}
+
+function roleTitle(role, kind) {
+  if (role === 'foreman') return kind === 'login' ? 'Вход прораба' : 'Регистрация прораба';
+  if (role === 'master') return kind === 'login' ? 'Вход мастера' : 'Регистрация мастера';
+  if (role === 'inspector') return kind === 'login' ? 'Вход в приёмку' : 'Регистрация для приёмки';
+  return kind === 'login' ? 'Вход' : 'Регистрация';
 }
 
 function showLogin(res, role, errors, values) {
   if (!role) return render(res, 'login-choose', { title: 'Вход', errors });
   return render(res, 'login-role', {
-    title: role === 'foreman' ? 'Вход прораба' : 'Вход мастера',
+    title: roleTitle(role, 'login'),
     role,
     errors,
     values,
@@ -90,10 +97,13 @@ function showLogin(res, role, errors, values) {
 }
 
 function showRegister(res, values, errors) {
-  const role = values.role === 'foreman' || values.role === 'master' ? values.role : '';
+  const role =
+    values.role === 'foreman' || values.role === 'master' || values.role === 'inspector'
+      ? values.role
+      : '';
   if (!role) return render(res, 'register-choose', { title: 'Регистрация', errors });
   return render(res, 'register-role', {
-    title: role === 'foreman' ? 'Регистрация прораба' : 'Регистрация мастера',
+    title: roleTitle(role, 'register'),
     errors,
     values,
   });
@@ -126,7 +136,11 @@ async function loginPost(req, res, next) {
     phone: String(req.body.phone || '').trim(),
     next: safeNext(req.body.next) || '',
   };
-  const role = askedRole(req) || (req.body.role === 'foreman' || req.body.role === 'master' ? req.body.role : '');
+  const role =
+    askedRole(req) ||
+    (req.body.role === 'foreman' || req.body.role === 'master' || req.body.role === 'inspector'
+      ? req.body.role
+      : '');
   const key = loginKey(phone || values.phone, req);
   if (tooManyLogins(key)) {
     return showLogin(res, role, { form: 'Слишком много попыток. Подождите четверть часа.' }, values);
@@ -146,6 +160,17 @@ async function loginPost(req, res, next) {
       markLoginFail(key);
       return showLogin(res, role, { form: 'Неверный телефон или пароль.' }, values);
     }
+    if (role && user.role !== role) {
+      const labels = { foreman: 'прораба', master: 'мастера', inspector: 'приёмки', client: 'клиента' };
+      return showLogin(
+        res,
+        role,
+        {
+          form: `Этот телефон зарегистрирован для ${labels[user.role] || 'другого кабинета'}. Выберите свой вход.`,
+        },
+        values
+      );
+    }
     clearLoginFail(key);
     const dest = values.next || homeFor(user.role);
     return startSession(req, res, next, user.id, dest);
@@ -156,7 +181,10 @@ async function loginPost(req, res, next) {
 
 function registerForm(req, res) {
   if (res.locals.user) return res.redirect(303, homeFor(res.locals.user.role));
-  if (!req.params.role && (req.query.role === 'foreman' || req.query.role === 'master')) {
+  if (
+    !req.params.role &&
+    (req.query.role === 'foreman' || req.query.role === 'master' || req.query.role === 'inspector')
+  ) {
     return res.redirect(303, `/register/${req.query.role}`);
   }
   if (req.params.role && !askedRole(req)) return res.redirect(303, '/register');
@@ -176,7 +204,9 @@ function readAccount(body) {
   if (fullName.length < 2 || fullName.length > 80) errors.full_name = 'Имя — от 2 до 80 символов.';
   if (!phone) errors.phone = 'Телефон в формате +7 900 000-00-00.';
   if (password.length < 8 || password.length > 72) errors.password = 'Пароль не короче 8 символов.';
-  if (!['foreman', 'master'].includes(role)) errors.role = 'Выберите роль: прораб или мастер.';
+  if (!['foreman', 'master', 'inspector'].includes(role)) {
+    errors.role = 'Выберите роль: прораб, мастер или приёмка.';
+  }
   if (role === 'master' && !SPECIALTIES[specialty]) errors.specialty = 'Выберите специальность.';
   return {
     errors,

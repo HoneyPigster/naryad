@@ -1,3 +1,7 @@
+<%
+  var roleLabel = role === 'foreman' ? 'Прораб' : role === 'master' ? 'Мастер' : 'Приёмка';
+  var roleHeading = role === 'foreman' ? 'Вход прораба' : role === 'master' ? 'Вход мастера' : 'Вход в приёмку';
+%>
 <%- include('partials/head', { title, wide: true }) %>
 <p class="back"><a href="/login">К выбору</a></p>
 <div class="role-screen">
@@ -5,8 +9,8 @@
     <%- include('partials/drawing', { role: role }) %>
   </div>
   <div>
-    <p class="kicker"><%= role === 'foreman' ? 'Прораб' : 'Мастер' %></p>
-    <h1><%= role === 'foreman' ? 'Вход прораба' : 'Вход мастера' %></h1>
+    <p class="kicker"><%= roleLabel %></p>
+    <h1><%= roleHeading %></h1>
     <% if (errors.form) { %><p class="banner is-error" role="alert"><%= errors.form %></p><% } %>
     <form method="post" action="/login/<%= role %>" class="stack">
       <%- include('partials/csrf') %>
@@ -24,7 +28,9 @@
       <button class="btn" type="submit">Войти</button>
       <p class="hint">Нет кабинета? <a href="/register/<%= role %>">Регистрация</a></p>
     </form>
-    <%- include('partials/demo', { demoRole: role }) %>
+    <% if (role === 'foreman' || role === 'master') { %>
+      <%- include('partials/demo', { demoRole: role }) %>
+    <% } %>
   </div>
 </div>
 <%- include('partials/foot') %>

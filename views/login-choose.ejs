@@ -1,6 +1,6 @@
 <%- include('partials/head', { title, wide: true }) %>
 <h1>Вход</h1>
-<p class="lede">Два отдельных входа. Выберите свой.</p>
+<p class="lede">Три отдельных входа. Выберите свой кабинет.</p>
 <% if (errors && errors.form) { %><p class="banner is-error" role="alert"><%= errors.form %></p><% } %>
 <div class="role-pick">
   <a class="role-choice role-choice-foreman" href="/login/foreman">
@@ -14,6 +14,12 @@
     <p class="kicker">Мастер</p>
     <h2>Я мастер</h2>
     <p>Вход в свой кабинет.</p>
+  </a>
+  <a class="role-choice role-choice-inspector" href="/login/inspector">
+    <%- include('partials/drawing', { role: 'inspector' }) %>
+    <p class="kicker">Приёмка</p>
+    <h2>Я на приёмке</h2>
+    <p>Вход в кабинет приёмки.</p>
   </a>
 </div>
 <%- include('partials/foot') %>

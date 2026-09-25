@@ -1,3 +1,7 @@
+<%
+  var roleLabel = values.role === 'foreman' ? 'Прораб' : values.role === 'master' ? 'Мастер' : 'Приёмка';
+  var roleHeading = values.role === 'foreman' ? 'Регистрация прораба' : values.role === 'master' ? 'Регистрация мастера' : 'Регистрация для приёмки';
+%>
 <%- include('partials/head', { title, wide: true }) %>
 <p class="back"><a href="/register">К выбору</a></p>
 <div class="role-screen">
@@ -5,8 +9,8 @@
     <%- include('partials/drawing', { role: values.role }) %>
   </div>
   <div>
-    <p class="kicker"><%= values.role === 'foreman' ? 'Прораб' : 'Мастер' %></p>
-    <h1><%= values.role === 'foreman' ? 'Регистрация прораба' : 'Регистрация мастера' %></h1>
+    <p class="kicker"><%= roleLabel %></p>
+    <h1><%= roleHeading %></h1>
     <p class="lede">Оплата не подключена, деньги не списываются.</p>
     <% if (errors.form) { %><p class="banner is-error" role="alert"><%= errors.form %></p><% } %>
     <form method="post" action="/register/<%= values.role %>" class="stack">

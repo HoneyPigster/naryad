@@ -1,6 +1,4 @@
-const crypto = require('crypto');
 const multer = require('multer');
-const { requireRole } = require('../mw');
 const { flash, csrfOk, rejectCsrf } = require('../mw');
 const { formatMoney, formatDate, parseId } = require('../text');
 const constants = require('./constants');
@@ -14,10 +12,17 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024, files: 1 },
 });
 
-function requireUser(req, res, next) {
+function requireInspector(req, res, next) {
   if (!res.locals.user) {
     const nextUrl = encodeURIComponent(req.originalUrl || '/inspection');
-    return res.redirect(303, `/login/foreman?next=${nextUrl}`);
+    return res.redirect(303, `/login/inspector?next=${nextUrl}`);
+  }
+  if (res.locals.user.role !== 'inspector') {
+    return res.status(403).render('error', {
+      title: 'Нет доступа',
+      message:
+        'Приёмка — отдельный кабинет. Выйдите и войдите или зарегистрируйтесь как «Приёмка».',
+    });
   }
   return next();
 }
@@ -692,41 +697,37 @@ async function testPaymentWebhook(req, res) {
 
 function mount(app) {
   app.get('/priemka', (req, res) => res.redirect(303, '/inspection'));
-  app.get('/inspection', requireUser, dashboard);
-  app.get('/inspection/new', requireUser, newForm);
-  app.post('/inspection/projects', requireUser, createProject);
-  app.get('/inspection/projects/:id/paywall', requireUser, paywall);
-  app.post('/inspection/projects/:id/open', requireUser, openUnpaid);
-  app.get('/inspection/projects/:id', requireUser, projectShow);
-  app.post('/inspection/projects/:id/rooms', requireUser, addRoom);
-  app.post('/inspection/projects/:id/rooms/:roomId/delete', requireUser, deleteRoom);
-  app.post('/inspection/projects/:id/start', requireUser, start);
+  app.get('/inspection', requireInspector, dashboard);
+  app.get('/inspection/new', requireInspector, newForm);
+  app.post('/inspection/projects', requireInspector, createProject);
+  app.get('/inspection/projects/:id/paywall', requireInspector, paywall);
+  app.post('/inspection/projects/:id/open', requireInspector, openUnpaid);
+  app.get('/inspection/projects/:id', requireInspector, projectShow);
+  app.post('/inspection/projects/:id/rooms', requireInspector, addRoom);
+  app.post('/inspection/projects/:id/rooms/:roomId/delete', requireInspector, deleteRoom);
+  app.post('/inspection/projects/:id/start', requireInspector, start);
 
-  app.get('/inspection/runs/:id', requireUser, runShow);
-  app.post('/inspection/runs/:id/results/:resultId', requireUser, setResult);
-  app.get('/inspection/runs/:id/defects/new', requireUser, defectNew);
-  app.post('/inspection/runs/:id/defects', requireUser, defectCreate);
-  app.get('/inspection/runs/:id/review', requireUser, review);
-  app.post('/inspection/runs/:id/complete', requireUser, complete);
-  app.get('/inspection/runs/:id/summary', requireUser, summary);
-  app.post('/inspection/runs/:id/report', requireUser, makeReport);
-  app.get('/inspection/runs/:id/report', requireUser, openReport);
-  app.post('/inspection/runs/:id/share', requireUser, shareCreate);
-  app.post('/inspection/runs/:id/follow-up', requireUser, followUp);
-  app.post('/inspection/runs/:id/pause', requireUser, pause);
+  app.get('/inspection/runs/:id', requireInspector, runShow);
+  app.post('/inspection/runs/:id/results/:resultId', requireInspector, setResult);
+  app.get('/inspection/runs/:id/defects/new', requireInspector, defectNew);
+  app.post('/inspection/runs/:id/defects', requireInspector, defectCreate);
+  app.get('/inspection/runs/:id/review', requireInspector, review);
+  app.post('/inspection/runs/:id/complete', requireInspector, complete);
+  app.get('/inspection/runs/:id/summary', requireInspector, summary);
+  app.post('/inspection/runs/:id/report', requireInspector, makeReport);
+  app.get('/inspection/runs/:id/report', requireInspector, openReport);
+  app.post('/inspection/runs/:id/share', requireInspector, shareCreate);
+  app.post('/inspection/runs/:id/follow-up', requireInspector, followUp);
+  app.post('/inspection/runs/:id/pause', requireInspector, pause);
 
-  app.get('/inspection/defects/:id', requireUser, defectShow);
-  app.post('/inspection/defects/:id/photos', requireUser, receivePhoto, defectPhoto);
-  app.post('/inspection/defects/:id/measurements', requireUser, defectMeasure);
-  app.post('/inspection/defects/:id/status', requireUser, defectStatus);
-  app.get('/inspection/defect-photos/:id', requireUser, showDefectPhoto);
+  app.get('/inspection/defects/:id', requireInspector, defectShow);
+  app.post('/inspection/defects/:id/photos', requireInspector, receivePhoto, defectPhoto);
+  app.post('/inspection/defects/:id/measurements', requireInspector, defectMeasure);
+  app.post('/inspection/defects/:id/status', requireInspector, defectStatus);
+  app.get('/inspection/defect-photos/:id', requireInspector, showDefectPhoto);
 
   app.get('/inspection/share/:token', shareView);
   app.post('/inspection/test/payment-event', testPaymentWebhook);
-
-  // silence unused requireRole import intent — inspection is multi-role
-  void requireRole;
-  void crypto;
 }
 
 module.exports = { mount };

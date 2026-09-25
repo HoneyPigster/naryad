@@ -16,5 +16,11 @@
     <h2>Я мастер</h2>
     <p>Свой кабинет и специальность.</p>
   </a>
+  <a class="role-choice role-choice-inspector" href="/register/inspector">
+    <%- include('partials/drawing', { role: 'inspector' }) %>
+    <p class="kicker">Приёмка</p>
+    <h2>Я на приёмке</h2>
+    <p>Отдельный кабинет: чек-лист, дефекты и отчёт.</p>
+  </a>
 </div>
 <%- include('partials/foot') %>

@@ -63,18 +63,21 @@ function pretty(phone) {
 async function register(name) {
   const client = jar();
   const phone = nextPhone();
-  const first = await page(client, '/register/foreman');
+  const first = await page(client, '/register/inspector');
   const body = new URLSearchParams({
     _csrf: csrfOf(first.body),
-    role: 'foreman',
+    role: 'inspector',
     specialty: 'plumber',
     full_name: name,
     phone: pretty(phone),
     password: 'parol-naryad-1',
   });
-  const done = await page(client, '/register/foreman', { method: 'POST', body });
+  const done = await page(client, '/register/inspector', { method: 'POST', body });
   assert(done.res.status === 200, 'registered');
-  assert(done.body.includes(name) || done.url.includes('/foreman') || done.url.includes('/inspection'), 'cabinet');
+  assert(
+    done.body.includes('Мои приёмки') || done.url.includes('/inspection') || done.body.includes(name),
+    'cabinet'
+  );
   return { client, phone, name };
 }
 

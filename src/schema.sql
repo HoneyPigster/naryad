@@ -8,7 +8,7 @@ CREATE INDEX IF NOT EXISTS idx_session_expire ON session (expire);
 
 CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
-  role TEXT NOT NULL CHECK (role IN ('client', 'foreman', 'master')),
+  role TEXT NOT NULL CHECK (role IN ('client', 'foreman', 'master', 'inspector')),
   full_name TEXT NOT NULL,
   phone TEXT NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
@@ -17,6 +17,11 @@ CREATE TABLE IF NOT EXISTS users (
   orders_opened_unpaid BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Existing DBs created before «Приёмка»: widen role check without recreating users.
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_check;
+ALTER TABLE users ADD CONSTRAINT users_role_check
+  CHECK (role IN ('client', 'foreman', 'master', 'inspector'));
 
 CREATE TABLE IF NOT EXISTS requests (
   id SERIAL PRIMARY KEY,

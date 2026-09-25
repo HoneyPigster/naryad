@@ -114,6 +114,7 @@
 }
 .role-foreman { --role: var(--ok); }
 .role-master { --role: var(--warn); }
+.role-inspector { --role: var(--accent); }
 
 * { box-sizing: border-box; }
 html { height: 100%; }
@@ -1101,6 +1102,7 @@ a.tel { text-underline-offset: 0.15em; }
 }
 .role-choice-foreman { --tile: var(--ok); --role: var(--ok); }
 .role-choice-master { --tile: var(--warn); --role: var(--warn); }
+.role-choice-inspector { --tile: var(--accent); --role: var(--accent); }
 .role-choice:hover { background: var(--surface); }
 .role-choice:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
 .role-choice h2 {
@@ -1290,6 +1292,38 @@ a.tel { text-underline-offset: 0.15em; }
 /* —— Приёмка (additive) —— */
 .home-tile-inspection {
   --role: var(--accent);
+  --tile: var(--accent);
+}
+.draw-inspector {
+  display: grid;
+  place-content: center;
+  gap: 0.5rem;
+  min-height: 12rem;
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 18%, var(--surface)), var(--surface));
+  border-bottom: 1px solid var(--border);
+  text-align: center;
+  color: var(--accent);
+}
+.draw-inspector-mark {
+  display: inline-grid;
+  place-content: center;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 1rem;
+  background: var(--accent);
+  color: #f4faf7;
+  font-family: var(--display);
+  font-size: 1.45rem;
+  font-weight: 500;
+  letter-spacing: -0.04em;
+}
+.draw-inspector-caption {
+  font-family: var(--display);
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  color: var(--text);
 }
 .home-tile-note {
   margin: 0;

@@ -125,7 +125,7 @@ async function main() {
   const regJar = jar();
   const reg = await page(regJar, '/register?role=client');
   assert(!reg.body.includes('value="client"'), 'register form has no client');
-  assert(reg.body.includes('/register/foreman') && reg.body.includes('/register/master'), 'register chooser has two paths');
+  assert(reg.body.includes('/register/foreman') && reg.body.includes('/register/master') && reg.body.includes('/register/inspector'), 'register chooser has three paths');
   const foremanReg = await page(regJar, '/register/foreman');
   assert(!foremanReg.body.includes('name="specialty"'), 'foreman registration has no specialty');
   assert(foremanReg.body.includes('/drawings/foreman.webp'), 'foreman registration has his drawing');
@@ -133,6 +133,9 @@ async function main() {
   const masterReg = await page(jar(), '/register/master');
   assert(masterReg.body.includes('name="specialty"'), 'master registration has specialty');
   assert(masterReg.body.includes('/drawings/master.webp'), 'master registration has his drawing');
+  const inspectorReg = await page(jar(), '/register/inspector');
+  assert(inspectorReg.body.includes('приёмк') || inspectorReg.body.includes('Приёмка'), 'inspector registration copy');
+  assert(!inspectorReg.body.includes('name="specialty"'), 'inspector registration has no specialty');
   const rejected = await page(regJar, '/register', {
     method: 'POST',
     body: new URLSearchParams({
@@ -143,7 +146,7 @@ async function main() {
       password: 'parol-naryad-1',
     }),
   });
-  assert(rejected.body.includes('прораб или мастер'), 'client registration refused');
+  assert(/прораб|мастер|приёмк/i.test(rejected.body), 'client registration refused');
 
   const foreman = await register('foreman', 'Прораб Проверка');
   const master = await register('master', 'Мастер Проверка', 'plumber');
