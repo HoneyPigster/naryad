@@ -82,7 +82,7 @@
   <a class="btn secondary" href="/inspection/projects/<%= inspection.project_id %>">К объекту</a>
   <% if (inspection.status === 'IN_PROGRESS' || inspection.status === 'PAUSED') { %>
     <a class="btn" href="/inspection/runs/<%= inspection.id %>/defects/new<%= roomId ? ('?room=' + roomId) : '' %>">Добавить дефект</a>
-    <a class="btn" href="/inspection/runs/<%= inspection.id %>/review">К завершению</a>
+    <a class="btn secondary" href="/inspection/runs/<%= inspection.id %>/review">К завершению</a>
   <% } else { %>
     <a class="btn" href="/inspection/runs/<%= inspection.id %>/summary">Итоги</a>
   <% } %>
