@@ -40,7 +40,7 @@ docker compose up -d --build
 curl -fsS http://127.0.0.1/health   # ok
 ```
 
-Демо-пользователи: `node scripts/seed-demo.js` (в Docker: `docker compose exec app node scripts/seed-demo.js`).
+Демо-пользователи создаются при старте приложения (`src/seed-demo.js`). Пароль: `demo1234` (телефоны на экранах входа).
 
 ## Стек
 
