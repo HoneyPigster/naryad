@@ -1,8 +1,19 @@
 {
-	email {$ACME_EMAIL:internal@localhost}
+	email admin@masterprorab.ru
+	default_sni 109.172.37.155
 }
 
-{$SITE_ADDRESS::80} {
+109.172.37.155 {
+	encode gzip
+	tls {
+		issuer acme {
+			profile shortlived
+		}
+	}
+	reverse_proxy app:3000
+}
+
+masterprorab.ru, www.masterprorab.ru {
 	encode gzip
 	reverse_proxy app:3000
 }

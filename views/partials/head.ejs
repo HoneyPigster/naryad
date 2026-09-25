@@ -5,17 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title %> — Наряд</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="/app.css">
-  <meta name="theme-color" content="#ebe6dc">
+  <link rel="stylesheet" href="/app.css?v=15">
+  <meta name="theme-color" content="#e4e9e5">
 </head>
-<body>
+<body class="<%= user ? 'role-' + user.role : 'role-guest' %><%= (typeof home !== 'undefined' && home) ? ' page-home' : '' %>">
   <a class="skip" href="#content">К содержанию</a>
   <header class="top">
-    <a class="mark" href="<%= user ? HOME[user.role] : '/' %>">Наряд</a>
+    <a class="mark" href="<%= user ? HOME[user.role] : '/' %>"><span class="mark-stamp" aria-hidden="true"></span><span class="mark-word">Наряд</span></a>
     <% if (user) { %>
       <div class="who">
-        <p class="who-role">
-          <%= ROLES[user.role] %><% if (user.role === 'master' && user.specialty) { %> · <%= SPECIALTIES[user.specialty] %><% } %>
+        <p class="who-role" title="<%= ROLES[user.role] %><% if (user.role === 'master' && user.specialty) { %> · <%= SPECIALTIES[user.specialty] %><% } %> <%= user.full_name %>">
+          <span class="role-label"><%= ROLES[user.role] %><% if (user.role === 'master' && user.specialty) { %> · <%= SPECIALTIES[user.specialty] %><% } %></span>
           <span class="who-name"><%= user.full_name %></span>
         </p>
         <form method="post" action="/logout">
@@ -25,12 +25,12 @@
       </div>
     <% } else { %>
       <nav class="who" aria-label="Вход">
-        <a href="/login">Войти</a>
-        <a class="btn" href="/register">Регистрация</a>
+        <a class="nav-link" href="/login">Войти</a>
+        <a class="nav-cta" href="/register">Регистрация</a>
       </nav>
     <% } %>
   </header>
-  <main id="content" class="wrap<%= typeof wide !== 'undefined' && wide ? ' wide' : '' %>">
+  <main id="content" class="<% if (typeof home !== 'undefined' && home) { %>home<% } else { %>wrap<% if (typeof wide !== 'undefined' && wide) { %> wide<% } else if (typeof board !== 'undefined' && board) { %> board<% } %><% } %>">
     <% if (flash) { %>
       <p class="banner <%= flash.type === 'error' ? 'is-error' : 'is-ok' %>" role="status"><%= flash.text %></p>
     <% } %>

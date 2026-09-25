@@ -1,58 +1,290 @@
-<%- include('../partials/head', { title }) %>
-<p class="kicker">Мастер · <%= SPECIALTIES[user.specialty] %></p>
-<h1>Заказы</h1>
+<%- include('../partials/head', { title, board: true }) %>
+<%
+  var current = null;
+  mine.forEach(function (item) {
+    if (!current && item.job_status !== 'done') current = item;
+  });
+  function tone(offer) {
+    if (!offer || offer.status === 'cancelled') return 'cancelled';
+    if (offer.status === 'open') return 'open';
+    if (offer.job_status === 'in_progress') return 'in_progress';
+    if (offer.job_status === 'done') return 'done';
+    return 'accepted';
+  }
+  function fmtTime(value) {
+    if (!value) return '';
+    return String(value).slice(0, 5);
+  }
+%>
+<p class="kicker"><%= SPECIALTIES[user.specialty] %></p>
+<h1><%= user.full_name %></h1>
+<nav class="cabinet-nav" aria-label="Разделы кабинета">
+  <a href="#bookings">Заявки</a>
+  <a href="#guarantees">Гарантии</a>
+  <a href="#dues">Кто должен</a>
+  <a href="#incoming">От прорабов</a>
+</nav>
+<p class="pay-note"><%= formatMoney(price) %> в месяц за входящие от прорабов. Оплата не проводится. Деньги не списываются.</p>
+<form method="post" action="/master/accepting" class="switch">
+  <%- include('../partials/csrf') %>
+  <input type="hidden" name="accepting_orders" value="<%= user.accepting_orders ? '0' : '1' %>">
+  <span><% if (user.accepting_orders) { %>Сейчас вы принимаете заказы от прорабов.<% } else { %>Приём от прорабов выключен.<% } %></span>
+  <button class="btn<%= user.accepting_orders ? ' secondary' : '' %>" type="submit"><%= user.accepting_orders ? 'Пауза' : 'Принимаю заказы' %></button>
+</form>
 
-<% if (!user.orders_opened_unpaid) { %>
-  <div class="price-sheet">
-    <p class="price"><%= formatMoney(price) %></p>
-    <p class="price-unit">в месяц за входящие</p>
-    <p class="notice">Оплата пока не проводится. Деньги не списываются. Без этого шага новые заказы не показываются.</p>
-    <p class="actions"><a class="btn" href="/master/subscription">Открыть экран цены</a></p>
+<section class="sec master-panel" id="bookings" aria-labelledby="bookings-title">
+  <div class="page-head">
+    <div>
+      <p class="kicker">Заявки</p>
+      <h2 id="bookings-title">Календарь и ручной ввод</h2>
+    </div>
   </div>
-<% } else { %>
-  <p class="notice tight">Входящие открыты без оплаты. <%= formatMoney(price) %> в месяц — когда подключим кассу. Деньги не списаны.</p>
-  <form method="post" action="/master/accepting" class="line">
+
+  <div class="cal-nav">
+    <a class="btn secondary" href="/master?month=<%= prevMonth %>&amp;day=<%= day %>#bookings">←</a>
+    <p class="cal-month"><%= monthTitle %></p>
+    <a class="btn secondary" href="/master?month=<%= nextMonth %>&amp;day=<%= day %>#bookings">→</a>
+  </div>
+
+  <div class="cal-grid" role="grid" aria-label="Календарь заявок">
+    <span>пн</span><span>вт</span><span>ср</span><span>чт</span><span>пт</span><span>сб</span><span>вс</span>
+    <% calendarDays.forEach(function (cell) { %>
+      <% if (!cell) { %>
+        <span class="cal-empty"></span>
+      <% } else { %>
+        <a class="cal-day<%= cell.isSelected ? ' is-on' : '' %><%= cell.isToday ? ' is-today' : '' %><%= cell.count ? ' has-items' : '' %>"
+           href="/master?month=<%= month %>&amp;day=<%= cell.iso %>#bookings">
+          <span class="cal-num"><%= cell.day %></span>
+          <% if (cell.count) { %><span class="cal-count"><%= cell.count %></span><% } %>
+        </a>
+      <% } %>
+    <% }) %>
+  </div>
+
+  <h3 class="master-subhead">На <%= formatDate(day) %></h3>
+  <% if (!dayBookings.length) { %>
+    <p class="empty">На этот день заявок нет.</p>
+  <% } else { %>
+    <ul class="plain">
+      <% dayBookings.forEach(function (item) { %>
+        <li class="item">
+          <p class="item-title">
+            <% if (item.visit_time) { %><span class="num"><%= fmtTime(item.visit_time) %></span> · <% } %>
+            <%= item.client_name %>
+          </p>
+          <p><%= item.summary %></p>
+          <% if (item.address) { %><p class="meta"><%= item.address %></p><% } %>
+          <% if (item.client_phone) { %>
+            <p class="meta"><a class="tel" href="tel:+<%= item.client_phone %>"><%= formatPhone(item.client_phone) %></a></p>
+          <% } %>
+          <div class="item-actions">
+            <% if (item.status === 'planned') { %>
+              <form method="post" action="/master/bookings/<%= item.id %>/status">
+                <%- include('../partials/csrf') %>
+                <input type="hidden" name="status" value="done">
+                <button class="btn secondary" type="submit">Готово</button>
+              </form>
+              <form method="post" action="/master/bookings/<%= item.id %>/status">
+                <%- include('../partials/csrf') %>
+                <input type="hidden" name="status" value="cancelled">
+                <button class="text-btn" type="submit">Отменить</button>
+              </form>
+            <% } else { %>
+              <span class="tag tag-done">Сделано</span>
+            <% } %>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <form method="post" action="/master/bookings" class="stack master-form" id="booking-form">
     <%- include('../partials/csrf') %>
-    <input type="hidden" name="accepting_orders" value="<%= user.accepting_orders ? '0' : '1' %>">
-    <span class="grow"><% if (user.accepting_orders) { %>Сейчас вы принимаете заказы.<% } else { %>Сейчас новые заказы вам не приходят.<% } %></span>
-    <button class="btn <%= user.accepting_orders ? 'secondary' : '' %>" type="submit"><%= user.accepting_orders ? 'Поставить на паузу' : 'Принимаю заказы' %></button>
+    <h3>Новая заявка</h3>
+    <div class="split">
+      <div class="field">
+        <label for="visit_on">Дата</label>
+        <input id="visit_on" name="visit_on" type="date" required value="<%= bookingValues.visit_on %>">
+      </div>
+      <div class="field">
+        <label for="visit_time">Время</label>
+        <input id="visit_time" name="visit_time" type="time" value="<%= bookingValues.visit_time %>">
+      </div>
+    </div>
+    <div class="field">
+      <label for="client_name">Клиент</label>
+      <input id="client_name" name="client_name" required maxlength="120" value="<%= bookingValues.client_name %>" placeholder="Имя">
+    </div>
+    <div class="field">
+      <label for="client_phone">Телефон</label>
+      <input id="client_phone" name="client_phone" type="tel" inputmode="tel" maxlength="20" value="<%= bookingValues.client_phone %>" placeholder="+7 900 000-00-00">
+    </div>
+    <div class="field">
+      <label for="address">Адрес</label>
+      <input id="address" name="address" maxlength="200" value="<%= bookingValues.address %>">
+    </div>
+    <div class="field">
+      <label for="summary">Что сделать</label>
+      <textarea id="summary" name="summary" required maxlength="500" placeholder="Кратко о работе"><%= bookingValues.summary %></textarea>
+    </div>
+    <button class="btn" type="submit">Добавить заявку</button>
   </form>
+</section>
+
+<section class="sec master-panel" id="guarantees" aria-labelledby="guarantees-title">
+  <p class="kicker">Гарантия на работу</p>
+  <h2 id="guarantees-title">Отслеживание гарантий</h2>
+  <% if (!guarantees.length) { %>
+    <p class="empty">Гарантий пока нет.</p>
+  <% } else { %>
+    <ul class="plain">
+      <% guarantees.forEach(function (item) { %>
+        <li class="item">
+          <p class="item-title"><%= item.work_title %> · <%= item.client_name %></p>
+          <p class="meta">
+            <%= formatDate(item.started_on) %> — <%= formatDate(item.ends_on) %>
+            · <%= item.months %> мес.
+            · <span class="tag <%= item.active ? 'tag-in_progress' : 'tag-cancelled' %>"><%= item.active ? 'Действует' : 'Истекла' %></span>
+          </p>
+          <% if (item.address) { %><p class="meta"><%= item.address %></p><% } %>
+          <% if (item.note) { %><p><%= item.note %></p><% } %>
+          <div class="item-actions">
+            <form method="post" action="/master/guarantees/<%= item.id %>/delete">
+              <%- include('../partials/csrf') %>
+              <button class="text-btn" type="submit">Удалить</button>
+            </form>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <form method="post" action="/master/guarantees" class="stack master-form">
+    <%- include('../partials/csrf') %>
+    <h3>Новая гарантия</h3>
+    <div class="field">
+      <label for="g_client">Клиент</label>
+      <input id="g_client" name="client_name" required maxlength="120" value="<%= guaranteeValues.client_name %>">
+    </div>
+    <div class="field">
+      <label for="g_work">Работа</label>
+      <input id="g_work" name="work_title" required maxlength="200" value="<%= guaranteeValues.work_title %>" placeholder="Замена смесителя">
+    </div>
+    <div class="field">
+      <label for="g_address">Адрес</label>
+      <input id="g_address" name="address" maxlength="200" value="<%= guaranteeValues.address %>">
+    </div>
+    <div class="split">
+      <div class="field">
+        <label for="g_start">Начало</label>
+        <input id="g_start" name="started_on" type="date" required value="<%= guaranteeValues.started_on %>">
+      </div>
+      <div class="field">
+        <label for="g_months">Срок, мес.</label>
+        <input id="g_months" name="months" type="number" min="1" max="120" required value="<%= guaranteeValues.months %>">
+      </div>
+    </div>
+    <div class="field">
+      <label for="g_note">Заметка</label>
+      <input id="g_note" name="note" maxlength="300" value="<%= guaranteeValues.note %>">
+    </div>
+    <button class="btn" type="submit">Добавить гарантию</button>
+  </form>
+</section>
+
+<section class="sec master-panel" id="dues" aria-labelledby="dues-title">
+  <p class="kicker">Доплаты</p>
+  <h2 id="dues-title">Кто сколько должен</h2>
+  <p class="home-price"><span class="num"><%= formatMoney(dueTotal) %></span> <span class="home-unit">ждут доплаты</span></p>
+  <% if (!dues.length) { %>
+    <p class="empty">Долгов клиентов нет.</p>
+  <% } else { %>
+    <ul class="plain">
+      <% dues.forEach(function (item) { %>
+        <li class="item">
+          <p class="item-title"><%= item.client_name %> · <span class="money<%= item.settled ? '' : ' is-due' %>"><%= formatMoney(item.amount_rub) %></span></p>
+          <p><%= item.title %></p>
+          <p class="meta"><%= formatDate(item.created_at) %><% if (item.settled) { %> · закрыто<% } %></p>
+          <div class="item-actions">
+            <form method="post" action="/master/dues/<%= item.id %>/settle">
+              <%- include('../partials/csrf') %>
+              <input type="hidden" name="settled" value="<%= item.settled ? '0' : '1' %>">
+              <button class="btn secondary" type="submit"><%= item.settled ? 'Снова в долг' : 'Закрыть доплату' %></button>
+            </form>
+            <form method="post" action="/master/dues/<%= item.id %>/delete">
+              <%- include('../partials/csrf') %>
+              <button class="text-btn" type="submit">Удалить</button>
+            </form>
+          </div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+
+  <form method="post" action="/master/dues" class="stack master-form">
+    <%- include('../partials/csrf') %>
+    <h3>Новая доплата</h3>
+    <div class="field">
+      <label for="d_client">Клиент</label>
+      <input id="d_client" name="client_name" required maxlength="120" value="<%= dueValues.client_name %>">
+    </div>
+    <div class="field">
+      <label for="d_title">За что</label>
+      <input id="d_title" name="title" required maxlength="200" value="<%= dueValues.title %>" placeholder="Доплата за материалы">
+    </div>
+    <div class="field">
+      <label for="d_amount">Сумма, ₽</label>
+      <input id="d_amount" name="amount_rub" inputmode="numeric" required value="<%= dueValues.amount_rub %>">
+    </div>
+    <button class="btn" type="submit">Добавить долг</button>
+  </form>
+</section>
+
+<% if (current) { %>
+  <article class="focus" id="current-offer">
+    <p class="kicker">Сейчас от прораба</p>
+    <h2><a href="/master/offers/<%= current.id %>"><%= current.address %></a></h2>
+    <p><span class="tag lg tag-<%= tone(current) %>"><%= offerLabel(current) %></span></p>
+    <p><%= current.summary %></p>
+    <p class="meta"><%= current.contact_name %> · <a class="tel" href="tel:+<%= current.contact_phone %>"><%= formatPhone(current.contact_phone) %></a></p>
+  </article>
 <% } %>
 
-<section class="section">
-  <h2>Новые заказы</h2>
-  <% if (!user.orders_opened_unpaid) { %>
-    <p class="empty">Входящие закрыты, пока вы не откроете их на экране цены. Деньги при этом не списываются.</p>
-  <% } else if (!user.accepting_orders) { %>
-    <p class="empty">Приём заказов выключен. Включите его, чтобы видеть новые вызовы.</p>
+<% var restMine = mine.filter(function (item) { return !current || item.id !== current.id; }); %>
+<% if (restMine.length) { %>
+  <section class="sec">
+    <h2>Мои заказы от прорабов</h2>
+    <div class="rows">
+      <% restMine.forEach(function (item) { %>
+        <a class="row" href="/master/offers/<%= item.id %>">
+          <span class="row-title"><%= item.address %></span>
+          <span class="tag tag-<%= tone(item) %>"><%= offerLabel(item) %></span>
+          <span class="row-next"><%= item.summary %></span>
+        </a>
+      <% }) %>
+    </div>
+  </section>
+<% } else if (!mine.length) { %>
+  <section class="sec">
+    <h2>Мои заказы</h2>
+    <p class="empty">Принятых заказов от прорабов нет.</p>
+  </section>
+<% } %>
+
+<section class="sec" id="incoming">
+  <h2>Входящие</h2>
+  <% if (!user.accepting_orders) { %>
+    <p class="empty">Включите приём, чтобы видеть новые вызовы от прорабов.</p>
   <% } else if (!incoming.length) { %>
-    <p class="empty">Новых заказов нет. Когда прораб или клиент предложит работу по вашей специальности, она появится здесь.</p>
+    <p class="empty">Новых вызовов нет.</p>
   <% } else { %>
     <div class="rows">
       <% incoming.forEach(function (item) { %>
         <a class="row" href="/master/offers/<%= item.id %>">
           <span class="row-title"><%= item.address %></span>
-          <span class="row-status"><%= item.object_id ? 'От прораба' : 'От клиента' %></span>
-          <span class="row-meta"><%= item.summary %></span>
-          <span class="row-date"><%= formatDate(item.created_at) %></span>
-        </a>
-      <% }) %>
-    </div>
-  <% } %>
-</section>
-
-<section class="section">
-  <h2>Мои работы</h2>
-  <% if (!mine.length) { %>
-    <p class="empty">Принятых заказов пока нет.</p>
-  <% } else { %>
-    <div class="rows">
-      <% mine.forEach(function (item) { %>
-        <a class="row" href="/master/offers/<%= item.id %>">
-          <span class="row-title"><%= item.address %></span>
-          <span class="row-status"><%= offerLabel(item) %></span>
-          <span class="row-meta"><%= item.summary %></span>
-          <span class="row-date"><%= formatDate(item.accepted_at) %></span>
+          <span class="row-go">Открыть</span>
+          <span class="row-meta"><%= item.contact_name %></span>
+          <span class="row-next"><%= item.summary %></span>
         </a>
       <% }) %>
     </div>

@@ -1,0 +1,24 @@
+<%
+  var people = [
+    { role: 'foreman', href: '/login/foreman?phone=79002222222', label: 'Прораб', name: 'Игорь Павлов', phone: '79002222222' },
+    { role: 'master', href: '/login/master?phone=79003333333', label: 'Сантехник', name: 'Сергей Ким', phone: '79003333333' },
+    { role: 'master', href: '/login/master?phone=79004444444', label: 'Электрик', name: 'Павел Орлов', phone: '79004444444' },
+    { role: 'master', href: '/login/master?phone=79005555555', label: 'Стиральные машины', name: 'Марина Волкова', phone: '79005555555' },
+  ];
+  if (typeof demoRole !== 'undefined' && demoRole) {
+    people = people.filter(function (person) { return person.role === demoRole; });
+  }
+%>
+<section class="demo" aria-labelledby="demo-title">
+  <h2 id="demo-title">Демо</h2>
+  <p class="demo-pass">Пароль <strong class="num">demo1234</strong></p>
+  <div class="demo-list">
+    <% people.forEach(function (person) { %>
+      <a class="demo-row" href="<%= person.href %>">
+        <span class="demo-role"><%= person.label %></span>
+        <span class="demo-name"><%= person.name %></span>
+        <span class="demo-phone num"><%= person.phone %></span>
+      </a>
+    <% }) %>
+  </div>
+</section>

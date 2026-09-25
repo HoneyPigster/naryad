@@ -96,7 +96,79 @@ CREATE TABLE IF NOT EXISTS offers (
   CONSTRAINT offers_source CHECK (request_id IS NOT NULL OR object_id IS NOT NULL)
 );
 
+CREATE TABLE IF NOT EXISTS tasks (
+  id SERIAL PRIMARY KEY,
+  foreman_id INTEGER NOT NULL REFERENCES users (id),
+  specialty TEXT NOT NULL CHECK (specialty IN ('plumber', 'electrician', 'washer')),
+  address TEXT NOT NULL,
+  summary TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS tasks_foreman_idx ON tasks (foreman_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS tasks_specialty_idx ON tasks (specialty, created_at DESC);
+
+CREATE TABLE IF NOT EXISTS task_responses (
+  id SERIAL PRIMARY KEY,
+  task_id INTEGER NOT NULL REFERENCES tasks (id) ON DELETE CASCADE,
+  master_id INTEGER NOT NULL REFERENCES users (id),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE (task_id, master_id)
+);
+
+CREATE INDEX IF NOT EXISTS task_responses_task_idx ON task_responses (task_id, created_at);
+CREATE INDEX IF NOT EXISTS task_responses_master_idx ON task_responses (master_id, created_at DESC);
+
 CREATE INDEX IF NOT EXISTS offers_open_idx ON offers (specialty, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS offers_master_idx ON offers (master_id, created_at DESC);
 CREATE INDEX IF NOT EXISTS offers_object_idx ON offers (object_id);
 CREATE INDEX IF NOT EXISTS offers_request_idx ON offers (request_id);
+
+CREATE TABLE IF NOT EXISTS master_bookings (
+  id SERIAL PRIMARY KEY,
+  master_id INTEGER NOT NULL REFERENCES users (id),
+  client_name TEXT NOT NULL,
+  client_phone TEXT NOT NULL DEFAULT '',
+  address TEXT NOT NULL DEFAULT '',
+  summary TEXT NOT NULL,
+  visit_on DATE NOT NULL,
+  visit_time TIME,
+  status TEXT NOT NULL DEFAULT 'planned'
+    CHECK (status IN ('planned', 'done', 'cancelled')),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS master_bookings_master_day_idx
+  ON master_bookings (master_id, visit_on, visit_time NULLS LAST, id);
+
+CREATE TABLE IF NOT EXISTS master_guarantees (
+  id SERIAL PRIMARY KEY,
+  master_id INTEGER NOT NULL REFERENCES users (id),
+  booking_id INTEGER REFERENCES master_bookings (id) ON DELETE SET NULL,
+  client_name TEXT NOT NULL,
+  work_title TEXT NOT NULL,
+  address TEXT NOT NULL DEFAULT '',
+  months INTEGER NOT NULL CHECK (months >= 1 AND months <= 120),
+  started_on DATE NOT NULL,
+  ends_on DATE NOT NULL,
+  note TEXT NOT NULL DEFAULT '',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS master_guarantees_master_idx
+  ON master_guarantees (master_id, ends_on DESC, id DESC);
+
+CREATE TABLE IF NOT EXISTS master_client_dues (
+  id SERIAL PRIMARY KEY,
+  master_id INTEGER NOT NULL REFERENCES users (id),
+  booking_id INTEGER REFERENCES master_bookings (id) ON DELETE SET NULL,
+  client_name TEXT NOT NULL,
+  title TEXT NOT NULL,
+  amount_rub INTEGER NOT NULL CHECK (amount_rub >= 0 AND amount_rub <= 100000000),
+  settled BOOLEAN NOT NULL DEFAULT FALSE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS master_client_dues_master_idx
+  ON master_client_dues (master_id, settled, created_at DESC);

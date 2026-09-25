@@ -1,196 +1,349 @@
 <%- include('../partials/head', { title, wide: true }) %>
+<%
+  var inProgress = null;
+  var planned = null;
+  var allDone = stages.length > 0;
+  stages.forEach(function (stage) {
+    if (stage.status === 'in_progress' && !inProgress) inProgress = stage;
+    if (stage.status === 'planned' && !planned) planned = stage;
+    if (stage.status !== 'done') allDone = false;
+  });
+  var nextPurchase = null;
+  purchases.forEach(function (item) {
+    if (!nextPurchase && item.charged_to_client && !item.settled) nextPurchase = item;
+  });
+  var photoTotal = 0;
+  Object.keys(roomCounts).forEach(function (key) {
+    photoTotal += Number(roomCounts[key]) || 0;
+  });
+  var step = 'quiet';
+  if (object.status === 'done') step = 'ready';
+  else if (!stages.length) step = 'stage';
+  else if (!inProgress && planned) step = 'start';
+  else if (!purchases.length) step = 'purchase';
+  else if (!photoTotal) step = 'photo';
+  else if (inProgress) step = 'advance';
+  else if (allDone) step = 'finish';
+  var stageNow = inProgress || planned;
+%>
+<% if (!isPrimary) { %>
+<p class="back"><a href="/foreman">К квартире</a></p>
+<% } %>
 <header class="obj-head">
   <div>
-    <p class="kicker">Объект № <%= object.id %><% if (object.status === 'done') { %> · готово<% } %></p>
+    <p class="kicker">Объект <%= object.id %><% if (object.status === 'done') { %> · готово<% } %></p>
     <h1><%= object.address %></h1>
-    <p class="meta"><%= object.client_name %> · <span class="num"><%= formatPhone(object.client_phone) %></span></p>
+    <p class="meta"><%= object.client_name %> · <a class="tel" href="tel:+<%= object.client_phone %>"><%= formatPhone(object.client_phone) %></a></p>
   </div>
-  <p class="debt">
-    <span class="debt-label">Клиент должен</span>
-    <span class="debt-sum"><%= formatMoney(debt) %></span>
-  </p>
 </header>
-<p class="notice tight">Объект открыт без оплаты. <%= formatMoney(price) %> — когда подключим кассу. Деньги не списаны.</p>
 
-<section class="section">
-  <h2><span class="num">01</span> Этапы</h2>
-  <% if (!stages.length) { %>
-    <p class="empty">Этапов пока нет. Добавьте первый: демонтаж, электрика, плитка.</p>
-  <% } else { %>
-    <ol class="plain">
-      <% stages.forEach(function (stage) { %>
-        <li class="line">
-          <span class="grow"><%= stage.title %></span>
-          <form method="post" action="/foreman/objects/<%= object.id %>/stages/<%= stage.id %>">
-            <%- include('../partials/csrf') %>
-            <select name="status" aria-label="Статус этапа <%= stage.title %>">
-              <% Object.entries(STAGE_STATUS).forEach(function ([key, label]) { %>
-                <option value="<%= key %>" <%= stage.status === key ? 'selected' : '' %>><%= label %></option>
-              <% }) %>
-            </select>
-            <button class="btn secondary" type="submit">Сохранить</button>
-          </form>
-          <form method="post" action="/foreman/objects/<%= object.id %>/stages/<%= stage.id %>/delete">
-            <%- include('../partials/csrf') %>
-            <button class="text-btn" type="submit">Удалить</button>
-          </form>
-        </li>
-      <% }) %>
-    </ol>
-  <% } %>
-  <form method="post" action="/foreman/objects/<%= object.id %>/stages" class="inline-add">
-    <%- include('../partials/csrf') %>
-    <label class="sr" for="stage-title">Новый этап</label>
-    <input id="stage-title" name="title" placeholder="Новый этап" required>
-    <button class="btn secondary" type="submit">Добавить этап</button>
-  </form>
-</section>
+<dl class="situation">
+  <div>
+    <dt>Этап</dt>
+    <dd>
+      <% if (stageNow) { %>
+        <%= stageNow.title %>
+        <span class="tag tag-<%= stageNow.status %>"><%= STAGE_STATUS[stageNow.status] %></span>
+      <% } else if (stages.length) { %>
+        Готово
+      <% } else { %>
+        Нет
+      <% } %>
+    </dd>
+  </div>
+  <div>
+    <dt>Клиент должен</dt>
+    <dd class="money<%= debt > 0 ? ' is-due' : '' %>"><%= formatMoney(debt) %></dd>
+  </div>
+  <div>
+    <dt>Закупка</dt>
+    <dd><% if (nextPurchase) { %><%= nextPurchase.title %> · <%= formatMoney(nextPurchase.amount_rub) %><% } else { %>Нет<% } %></dd>
+  </div>
+  <div>
+    <dt>Фото</dt>
+    <dd><%= photoTotal %> <span class="muted">· <%= ROOMS[room] %> <%= roomCounts[room] || 0 %></span></dd>
+  </div>
+</dl>
+<p class="pay-note">Без оплаты. <%= formatMoney(price) %> за квартиру. Деньги не списаны.</p>
 
-<section class="section">
-  <h2><span class="num">02</span> Закупки</h2>
-  <% if (!purchases.length) { %>
-    <p class="empty">Закупок нет. Долг клиента считается из строк, которые ещё не закрыты.</p>
-  <% } else { %>
-    <ul class="plain">
-      <% purchases.forEach(function (item) { %>
-        <li class="line">
-          <span class="grow">
-            <%= item.title %>
-            <span class="block meta">
-              <%= formatMoney(item.amount_rub) %>
-              <% if (!item.charged_to_client) { %> · не в долг клиенту<% } %>
-              <% if (item.settled) { %> · закрыто<% } else if (item.charged_to_client) { %> · в долге<% } %>
-            </span>
-          </span>
-          <% if (item.charged_to_client) { %>
-            <form method="post" action="/foreman/objects/<%= object.id %>/purchases/<%= item.id %>">
-              <%- include('../partials/csrf') %>
-              <input type="hidden" name="settled" value="<%= item.settled ? '0' : '1' %>">
-              <button class="btn secondary" type="submit"><%= item.settled ? 'Снова в долг' : 'Закрыть долг' %></button>
-            </form>
-          <% } %>
-          <form method="post" action="/foreman/objects/<%= object.id %>/purchases/<%= item.id %>/delete">
-            <%- include('../partials/csrf') %>
-            <button class="text-btn" type="submit">Удалить</button>
-          </form>
-        </li>
-      <% }) %>
-    </ul>
-  <% } %>
-  <form method="post" action="/foreman/objects/<%= object.id %>/purchases" class="stack tight">
-    <%- include('../partials/csrf') %>
-    <div class="split">
-      <div class="field">
-        <label for="purchase-title">Название</label>
-        <input id="purchase-title" name="title" required placeholder="Кабель, смеситель, плитка">
-      </div>
-      <div class="field">
-        <label for="amount">Сумма, ₽</label>
-        <input id="amount" name="amount_rub" inputmode="numeric" required placeholder="1500">
-      </div>
-    </div>
-    <label class="choice"><input type="checkbox" name="charged_to_client" value="1" checked> В долг клиенту</label>
-    <button class="btn secondary" type="submit">Добавить закупку</button>
-  </form>
-</section>
-
-<section class="section">
-  <h2><span class="num">03</span> Фото по комнатам</h2>
-  <nav class="rooms" aria-label="Комнаты">
-    <% Object.entries(ROOMS).forEach(function ([key, label]) { %>
-      <a href="/foreman/objects/<%= object.id %>?room=<%= key %>" class="<%= room === key ? 'is-on' : '' %>" <%= room === key ? 'aria-current="page"' : '' %>><%= label %><% if (roomCounts[key]) { %> <span class="num"><%= roomCounts[key] %></span><% } %></a>
-    <% }) %>
-  </nav>
-  <% if (!photos.length) { %>
-    <p class="empty">В комнате «<%= ROOMS[room] %>» фото пока нет.</p>
-  <% } else { %>
-    <ul class="photos">
-      <% photos.forEach(function (photo) { %>
-        <li>
-          <img src="/photos/<%= photo.id %>" alt="Фото, <%= ROOMS[photo.room] %>, <%= formatDate(photo.created_at) %>">
-          <div class="photo-meta">
-            <span class="num"><%= formatDate(photo.created_at) %></span>
-            <form method="post" action="/foreman/objects/<%= object.id %>/photos/<%= photo.id %>/delete">
-              <%- include('../partials/csrf') %>
-              <button class="text-btn" type="submit">Удалить</button>
-            </form>
+<% if (step !== 'quiet') { %>
+  <div class="next">
+    <% if (step === 'ready') { %>
+      <p>Объект готов.</p>
+    <% } else if (step === 'stage') { %>
+      <p>Дальше: первый этап.</p>
+      <form method="post" action="/foreman/objects/<%= object.id %>/stages" class="adder">
+        <%- include('../partials/csrf') %>
+        <label class="sr" for="stage-title">Этап</label>
+        <input id="stage-title" name="title" placeholder="Демонтаж, электрика, плитка" required>
+        <button class="btn" type="submit">Добавить этап</button>
+      </form>
+    <% } else if (step === 'start') { %>
+      <p>Дальше: этап «<%= planned.title %>».</p>
+      <form method="post" action="/foreman/objects/<%= object.id %>/stages/<%= planned.id %>">
+        <%- include('../partials/csrf') %>
+        <input type="hidden" name="status" value="in_progress">
+        <button class="btn" type="submit">В работу</button>
+      </form>
+    <% } else if (step === 'purchase') { %>
+      <p>Дальше: закупка.</p>
+      <form method="post" action="/foreman/objects/<%= object.id %>/purchases" class="stack tight">
+        <%- include('../partials/csrf') %>
+        <div class="split">
+          <div class="field">
+            <label for="purchase-title">Название</label>
+            <input id="purchase-title" name="title" required placeholder="Кабель, смеситель, плитка">
           </div>
-        </li>
-      <% }) %>
-    </ul>
-  <% } %>
-  <form method="post" action="/foreman/objects/<%= object.id %>/photos" enctype="multipart/form-data" class="stack tight">
-    <%- include('../partials/csrf') %>
-    <input type="hidden" name="room" value="<%= room %>">
-    <div class="field">
-      <label for="photo">Фото в «<%= ROOMS[room] %>»</label>
-      <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required>
-    </div>
-    <button class="btn secondary" type="submit">Загрузить</button>
-  </form>
-</section>
+          <div class="field">
+            <label for="amount">Сумма, ₽</label>
+            <input id="amount" name="amount_rub" inputmode="numeric" required placeholder="1500">
+          </div>
+        </div>
+        <label class="choice"><input type="checkbox" name="charged_to_client" value="1" checked> В долг клиенту</label>
+        <button class="btn" type="submit">Добавить закупку</button>
+      </form>
+    <% } else if (step === 'photo') { %>
+      <p>Дальше: фото · <%= ROOMS[room] %>.</p>
+      <nav class="rooms" aria-label="Комнаты">
+        <% Object.entries(ROOMS).forEach(function ([key, label]) { %>
+          <a href="/foreman/objects/<%= object.id %>?room=<%= key %>" class="<%= room === key ? 'is-on' : '' %>" <%= room === key ? 'aria-current="page"' : '' %>><%= label %><% if (roomCounts[key]) { %> <span class="num"><%= roomCounts[key] %></span><% } %></a>
+        <% }) %>
+      </nav>
+      <form method="post" action="/foreman/objects/<%= object.id %>/photos" enctype="multipart/form-data" class="stack tight">
+        <%- include('../partials/csrf') %>
+        <input type="hidden" name="room" value="<%= room %>">
+        <div class="field">
+          <label for="photo">Файл</label>
+          <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required>
+        </div>
+        <button class="btn" type="submit">Загрузить</button>
+      </form>
+    <% } else if (step === 'advance') { %>
+      <p>Дальше: закончить «<%= inProgress.title %>».</p>
+      <form method="post" action="/foreman/objects/<%= object.id %>/stages/<%= inProgress.id %>">
+        <%- include('../partials/csrf') %>
+        <input type="hidden" name="status" value="done">
+        <button class="btn" type="submit">Этап готов</button>
+      </form>
+    <% } else if (step === 'finish') { %>
+      <p>Дальше: закрыть квартиру.</p>
+      <form method="post" action="/foreman/objects/<%= object.id %>/done">
+        <%- include('../partials/csrf') %>
+        <button class="btn" type="submit">Отметить объект готовым</button>
+      </form>
+    <% } %>
+  </div>
+<% } %>
 
-<section class="section">
-  <h2><span class="num">04</span> Вызов мастера</h2>
-  <% if (!offers.length) { %>
-    <p class="empty">Вызовов нет. Мастер увидит заказ, если открыл входящие и включил «принимаю заказы».</p>
-  <% } else { %>
-    <ul class="plain">
-      <% offers.forEach(function (offer) { %>
-        <li class="line">
-          <span class="grow">
-            <strong><%= SPECIALTIES[offer.specialty] %></strong> — <%= offerLabel(offer) %>
+<div class="work">
+  <section class="sec stages">
+    <h2>Этапы</h2>
+    <% if (!stages.length) { %>
+      <p class="empty">Этапов нет.</p>
+    <% } else { %>
+      <ol class="plain">
+        <% stages.forEach(function (stage) { %>
+          <li class="item">
+            <p class="item-title"><%= stage.title %></p>
+            <div class="item-actions">
+              <form method="post" action="/foreman/objects/<%= object.id %>/stages/<%= stage.id %>">
+                <%- include('../partials/csrf') %>
+                <select name="status" aria-label="Статус этапа <%= stage.title %>">
+                  <% Object.entries(STAGE_STATUS).forEach(function ([key, label]) { %>
+                    <option value="<%= key %>" <%= stage.status === key ? 'selected' : '' %>><%= label %></option>
+                  <% }) %>
+                </select>
+                <button class="text-btn" type="submit">Сохранить</button>
+              </form>
+              <form method="post" action="/foreman/objects/<%= object.id %>/stages/<%= stage.id %>/delete">
+                <%- include('../partials/csrf') %>
+                <button class="text-btn" type="submit">Удалить</button>
+              </form>
+            </div>
+          </li>
+        <% }) %>
+      </ol>
+    <% } %>
+    <% if (step !== 'stage') { %>
+      <form method="post" action="/foreman/objects/<%= object.id %>/stages" class="adder inline">
+        <%- include('../partials/csrf') %>
+        <label class="sr" for="stage-title-more">Этап</label>
+        <input id="stage-title-more" name="title" placeholder="Новый этап" required>
+        <button class="btn secondary" type="submit">Добавить этап</button>
+      </form>
+    <% } %>
+  </section>
+
+  <section class="sec purchases">
+    <h2>Закупки</h2>
+    <% if (!purchases.length) { %>
+      <p class="empty">Закупок нет.</p>
+    <% } else { %>
+      <ul class="plain">
+        <% purchases.forEach(function (item) { %>
+          <li class="item">
+            <p class="item-title"><%= item.title %></p>
+            <p class="meta">
+              <span class="num"><%= formatMoney(item.amount_rub) %></span>
+              <% if (!item.charged_to_client) { %> · не в долг<% } else if (item.settled) { %> · закрыто<% } else { %> · в долге<% } %>
+            </p>
+            <div class="item-actions">
+              <% if (item.charged_to_client) { %>
+                <form method="post" action="/foreman/objects/<%= object.id %>/purchases/<%= item.id %>">
+                  <%- include('../partials/csrf') %>
+                  <input type="hidden" name="settled" value="<%= item.settled ? '0' : '1' %>">
+                  <button class="text-btn" type="submit"><%= item.settled ? 'Снова в долг' : 'Закрыть долг' %></button>
+                </form>
+              <% } %>
+              <form method="post" action="/foreman/objects/<%= object.id %>/purchases/<%= item.id %>/delete">
+                <%- include('../partials/csrf') %>
+                <button class="text-btn" type="submit">Удалить</button>
+              </form>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+    <% if (step !== 'purchase') { %>
+      <form method="post" action="/foreman/objects/<%= object.id %>/purchases" class="stack tight">
+        <%- include('../partials/csrf') %>
+        <div class="split">
+          <div class="field">
+            <label for="purchase-title">Название</label>
+            <input id="purchase-title" name="title" required placeholder="Кабель, смеситель, плитка">
+          </div>
+          <div class="field">
+            <label for="amount">Сумма, ₽</label>
+            <input id="amount" name="amount_rub" inputmode="numeric" required placeholder="1500">
+          </div>
+        </div>
+        <label class="choice"><input type="checkbox" name="charged_to_client" value="1" checked> В долг клиенту</label>
+        <button class="btn secondary" type="submit">Добавить закупку</button>
+      </form>
+    <% } %>
+  </section>
+
+  <section class="sec photo-sec">
+    <h2>Фото</h2>
+    <% if (step !== 'photo') { %>
+      <nav class="rooms" aria-label="Комнаты">
+        <% Object.entries(ROOMS).forEach(function ([key, label]) { %>
+          <a href="/foreman/objects/<%= object.id %>?room=<%= key %>" class="<%= room === key ? 'is-on' : '' %>" <%= room === key ? 'aria-current="page"' : '' %>><%= label %><% if (roomCounts[key]) { %> <span class="num"><%= roomCounts[key] %></span><% } %></a>
+        <% }) %>
+      </nav>
+    <% } %>
+    <% if (!photos.length) { %>
+      <p class="empty">В «<%= ROOMS[room] %>» фото нет.</p>
+    <% } else { %>
+      <ul class="photos">
+        <% photos.forEach(function (photo) { %>
+          <li>
+            <img src="/photos/<%= photo.id %>" alt="<%= ROOMS[photo.room] %>, <%= formatDate(photo.created_at) %>">
+            <div class="photo-meta">
+              <span class="num"><%= formatDate(photo.created_at) %></span>
+              <form method="post" action="/foreman/objects/<%= object.id %>/photos/<%= photo.id %>/delete">
+                <%- include('../partials/csrf') %>
+                <button class="text-btn" type="submit">Удалить</button>
+              </form>
+            </div>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+    <% if (step !== 'photo') { %>
+      <form method="post" action="/foreman/objects/<%= object.id %>/photos" enctype="multipart/form-data" class="stack tight">
+        <%- include('../partials/csrf') %>
+        <input type="hidden" name="room" value="<%= room %>">
+        <div class="field">
+          <label for="photo">Файл в «<%= ROOMS[room] %>»</label>
+          <input id="photo" name="photo" type="file" accept="image/jpeg,image/png,image/webp" required>
+        </div>
+        <button class="btn secondary" type="submit">Загрузить</button>
+      </form>
+    <% } %>
+  </section>
+
+  <section class="sec calls">
+    <h2>Мастер</h2>
+    <% if (!offers.length) { %>
+      <p class="empty">Вызовов нет.</p>
+    <% } else { %>
+      <ul class="plain">
+        <% offers.forEach(function (offer) { %>
+          <%
+            var tone = 'accepted';
+            if (offer.status === 'open') tone = 'open';
+            else if (offer.status === 'cancelled') tone = 'cancelled';
+            else if (offer.job_status === 'in_progress') tone = 'in_progress';
+            else if (offer.job_status === 'done') tone = 'done';
+          %>
+          <li class="item">
+            <p class="item-title"><%= SPECIALTIES[offer.specialty] %> · <span class="tag tag-<%= tone %>"><%= offerLabel(offer) %></span></p>
             <% if (offer.master_name) { %>
-              <span class="block meta"><%= offer.master_name %> · <%= formatPhone(offer.master_phone) %> · <%= formatDate(offer.accepted_at) %></span>
+              <p class="meta"><%= offer.master_name %> · <a class="tel" href="tel:+<%= offer.master_phone %>"><%= formatPhone(offer.master_phone) %></a></p>
             <% } %>
-            <span class="block"><%= offer.summary %></span>
-          </span>
-          <% if (offer.status === 'open') { %>
-            <form method="post" action="/foreman/objects/<%= object.id %>/offers/<%= offer.id %>/cancel">
-              <%- include('../partials/csrf') %>
-              <button class="text-btn" type="submit">Отменить вызов</button>
-            </form>
-          <% } %>
-        </li>
-      <% }) %>
-    </ul>
-  <% } %>
-  <form method="post" action="/foreman/objects/<%= object.id %>/offers" class="stack tight">
-    <%- include('../partials/csrf') %>
-    <fieldset>
-      <legend>Кого вызвать</legend>
-      <% Object.entries(SPECIALTIES).forEach(function ([key, label]) { %>
-        <label class="choice"><input type="radio" name="specialty" value="<%= key %>" <%= key === 'plumber' ? 'required' : '' %>> <%= label %></label>
-      <% }) %>
-    </fieldset>
-    <div class="field">
-      <label for="summary">Что сделать</label>
-      <textarea id="summary" name="summary" required placeholder="Заменить смеситель в ванной"></textarea>
-    </div>
-    <button class="btn" type="submit">Предложить мастерам</button>
-  </form>
-</section>
-
-<% if (linked) { %>
-  <section class="section">
-    <h2><span class="num">05</span> Статус для клиента</h2>
-    <p class="meta">Сейчас: <%= REQUEST_STATUS[linked.status] || linked.status %></p>
-    <form method="post" action="/foreman/objects/<%= object.id %>/note" class="stack tight">
+            <p><%= offer.summary %></p>
+            <% if (offer.status === 'open') { %>
+              <form method="post" action="/foreman/objects/<%= object.id %>/offers/<%= offer.id %>/cancel">
+                <%- include('../partials/csrf') %>
+                <button class="text-btn" type="submit">Отменить вызов</button>
+              </form>
+            <% } %>
+          </li>
+        <% }) %>
+      </ul>
+    <% } %>
+    <form method="post" action="/foreman/objects/<%= object.id %>/offers" class="stack tight">
       <%- include('../partials/csrf') %>
+      <fieldset>
+        <legend>Кого вызвать</legend>
+        <% Object.entries(SPECIALTIES).forEach(function ([key, label]) { %>
+          <label class="choice"><input type="radio" name="specialty" value="<%= key %>" <%= key === 'plumber' ? 'required' : '' %>> <%= label %></label>
+        <% }) %>
+      </fieldset>
       <div class="field">
-        <label for="status_note">Заметка к статусу</label>
-        <textarea id="status_note" name="status_note" maxlength="500"><%= linked.status_note || '' %></textarea>
+        <label for="summary">Что сделать</label>
+        <textarea id="summary" name="summary" required placeholder="Заменить смеситель в ванной"></textarea>
       </div>
-      <button class="btn secondary" type="submit">Сохранить заметку</button>
+      <button class="btn secondary" type="submit">Предложить мастерам</button>
     </form>
   </section>
-<% } %>
 
-<% if (object.status !== 'done') { %>
-  <form method="post" action="/foreman/objects/<%= object.id %>/done" class="section">
-    <%- include('../partials/csrf') %>
-    <button class="text-btn" type="submit">Отметить объект готовым</button>
-  </form>
-<% } %>
-<p class="aside"><a href="/foreman">Все объекты</a></p>
+  <% if (linked) { %>
+    <section class="sec note">
+      <h2>Клиенту</h2>
+      <p class="meta">Сейчас: <%= REQUEST_STATUS[linked.status] || linked.status %></p>
+      <form method="post" action="/foreman/objects/<%= object.id %>/note" class="stack tight">
+        <%- include('../partials/csrf') %>
+        <div class="field">
+          <label for="status_note">Заметка</label>
+          <textarea id="status_note" name="status_note" maxlength="500"><%= linked.status_note || '' %></textarea>
+        </div>
+        <button class="btn secondary" type="submit">Сохранить заметку</button>
+      </form>
+    </section>
+  <% } %>
+
+  <% if (object.status !== 'done' && step !== 'finish') { %>
+    <form method="post" action="/foreman/objects/<%= object.id %>/done" class="sec finish">
+      <%- include('../partials/csrf') %>
+      <button class="text-btn" type="submit">Отметить объект готовым</button>
+    </form>
+  <% } %>
+
+  <% if (others.length) { %>
+    <section class="sec">
+      <h2>Другие квартиры</h2>
+      <div class="rows">
+        <% others.forEach(function (item) { %>
+          <a class="row" href="/foreman/objects/<%= item.id %>">
+            <span class="row-title"><%= item.address %></span>
+            <span class="row-go"><%= item.status === 'done' ? 'Готово' : 'Открыть' %></span>
+          </a>
+        <% }) %>
+      </div>
+    </section>
+  <% } %>
+  <p class="hint"><a href="/foreman/objects/new">Новая квартира</a></p>
+</div>
 <%- include('../partials/foot') %>

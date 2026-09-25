@@ -1,11 +1,12 @@
 <%- include('../partials/head', { title }) %>
+<% if (typeof cabinet === 'undefined' || !cabinet) { %>
+<p class="back"><a href="/foreman">Квартира</a></p>
+<% } %>
 <p class="kicker">Новый объект</p>
-<h1>Квартира в работу</h1>
-<div class="price-sheet">
-  <p class="price"><%= formatMoney(price) %></p>
-  <p class="price-unit">за одну квартиру</p>
-  <p class="notice">Оплата пока не проводится. Деньги не списываются. Когда появится касса, эта сумма будет за каждый новый объект.</p>
-</div>
+<h1>Квартира</h1>
+<p class="price num"><%= formatMoney(price) %></p>
+<p class="price-unit">за одну квартиру</p>
+<p class="notice">Оплата не проводится. Деньги не списываются.</p>
 <% if (errors.form) { %><p class="banner is-error" role="alert"><%= errors.form %></p><% } %>
 <form method="post" action="/foreman/objects" class="stack">
   <%- include('../partials/csrf') %>
@@ -23,16 +24,15 @@
     <% if (errors.client_name) { %><p class="field-error" id="client-err" role="alert"><%= errors.client_name %></p><% } %>
   </div>
   <div class="field">
-    <label for="client_phone">Телефон клиента</label>
+    <label for="client_phone">Телефон</label>
     <input id="client_phone" name="client_phone" type="tel" inputmode="tel" required placeholder="+7 900 000-00-00" value="<%= values.client_phone %>" <%= errors.client_phone ? 'aria-invalid="true" aria-describedby="phone-err"' : '' %>>
     <% if (errors.client_phone) { %><p class="field-error" id="phone-err" role="alert"><%= errors.client_phone %></p><% } %>
   </div>
   <label class="choice">
-    <input type="checkbox" name="confirm_unpaid" value="1">
-    Открываю объект без оплаты. Деньги не списываются.
+    <input type="checkbox" name="confirm_unpaid" value="1" <%= values.confirm_unpaid ? 'checked' : '' %>>
+    Без оплаты. Деньги не списываются.
   </label>
   <% if (errors.confirm_unpaid) { %><p class="field-error" role="alert"><%= errors.confirm_unpaid %></p><% } %>
   <button class="btn" type="submit">Открыть объект без оплаты</button>
 </form>
-<p class="aside"><a href="/foreman">К объектам</a></p>
 <%- include('../partials/foot') %>

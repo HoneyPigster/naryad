@@ -1,7 +1,7 @@
 <%- include('../partials/head', { title }) %>
-<p class="kicker">Новая заявка</p>
-<h1>Что нужно сделать</h1>
-<p class="lede">Клиент не платит. Статус появится в кабинете, когда заявку возьмут.</p>
+<p class="back"><a href="/client">Заявки</a></p>
+<h1>Новая заявка</h1>
+<p class="lede">Бесплатно. Статус появится в списке.</p>
 <form method="post" action="/client/requests" class="stack">
   <%- include('../partials/csrf') %>
   <fieldset>
@@ -17,7 +17,7 @@
     <% if (errors.address) { %><p class="field-error" id="address-err" role="alert"><%= errors.address %></p><% } %>
   </div>
   <div class="field">
-    <label for="description">Что случилось</label>
+    <label for="description">Что сделать</label>
     <textarea id="description" name="description" required <%= errors.description ? 'aria-invalid="true" aria-describedby="description-err"' : '' %>><%= values.description %></textarea>
     <% if (errors.description) { %><p class="field-error" id="description-err" role="alert"><%= errors.description %></p><% } %>
   </div>

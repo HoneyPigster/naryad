@@ -1,20 +1,19 @@
 <%- include('../partials/head', { title }) %>
-<p class="kicker">Подписка мастера</p>
-<h1>Входящие заказы</h1>
-<div class="price-sheet">
-  <p class="price"><%= formatMoney(price) %></p>
-  <p class="price-unit">в месяц</p>
-  <p class="notice">Оплата пока не проводится. Деньги не списываются. Кнопка ниже не создаёт платёж и не помечает подписку оплаченной.</p>
-</div>
+<p class="back"><a href="/master">Кабинет</a></p>
+<p class="kicker">Мастер</p>
+<h1>Входящие</h1>
+<p class="price num"><%= formatMoney(price) %></p>
+<p class="price-unit">в месяц за входящие</p>
+<p class="notice">Оплата не проводится. Деньги не списываются. Кнопка не создаёт платёж.</p>
 <% if (opened) { %>
-  <p class="banner is-ok" role="status">Входящие уже открыты без оплаты. Деньги не списаны.</p>
-  <p class="actions"><a class="btn" href="/master">К заказам</a></p>
+  <p class="banner is-ok" role="status">Входящие уже открыты. Деньги не списаны.</p>
+  <p class="actions"><a class="btn" href="/master">В кабинет</a></p>
 <% } else { %>
   <form method="post" action="/master/subscription/open" class="stack">
     <%- include('../partials/csrf') %>
     <label class="choice">
       <input type="checkbox" name="confirm_unpaid" value="1" required>
-      Открываю входящие без оплаты. Деньги не списываются.
+      Без оплаты. Деньги не списываются.
     </label>
     <button class="btn" type="submit">Открыть входящие без оплаты</button>
   </form>

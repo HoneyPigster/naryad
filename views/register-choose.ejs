@@ -1,0 +1,20 @@
+<%- include('partials/head', { title, wide: true }) %>
+<h1>Регистрация</h1>
+<p class="lede">ИНН не нужен. Оплата не подключена, деньги не списываются.</p>
+<% if (errors && errors.role) { %><p class="banner is-error" role="alert"><%= errors.role %></p><% } %>
+<% if (errors && errors.form) { %><p class="banner is-error" role="alert"><%= errors.form %></p><% } %>
+<div class="role-pick">
+  <a class="role-choice role-choice-foreman" href="/register/foreman">
+    <%- include('partials/drawing', { role: 'foreman' }) %>
+    <p class="kicker">Прораб</p>
+    <h2>Я прораб</h2>
+    <p>Кабинет квартиры. Специальность не нужна.</p>
+  </a>
+  <a class="role-choice role-choice-master" href="/register/master">
+    <%- include('partials/drawing', { role: 'master' }) %>
+    <p class="kicker">Мастер</p>
+    <h2>Я мастер</h2>
+    <p>Свой кабинет и специальность.</p>
+  </a>
+</div>
+<%- include('partials/foot') %>

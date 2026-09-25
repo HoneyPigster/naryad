@@ -1,0 +1,15 @@
+<%- include('../partials/head', { title }) %>
+<p class="back"><a href="/master">Задачи</a></p>
+<p class="kicker"><%= SPECIALTIES[task.specialty] %></p>
+<h1><%= task.address %></h1>
+<p class="lede"><%= task.summary %></p>
+<p class="meta">Прораб <%= task.foreman_name %> · <a class="tel" href="tel:+<%= task.foreman_phone %>"><%= formatPhone(task.foreman_phone) %></a></p>
+<% if (task.responded) { %>
+  <p class="notice">Вы откликнулись. Деньги не списаны.</p>
+<% } else { %>
+  <form method="post" action="/master/tasks/<%= task.id %>/respond" class="stack">
+    <%- include('../partials/csrf') %>
+    <button class="btn" type="submit">Откликнуться</button>
+  </form>
+<% } %>
+<%- include('../partials/foot') %>

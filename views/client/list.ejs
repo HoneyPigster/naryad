@@ -1,21 +1,33 @@
-<%- include('../partials/head', { title }) %>
+<%- include('../partials/head', { title, board: true }) %>
+<%
+  var nextBy = {
+    new: 'Ждёт прораба',
+    offered: 'Ждёт мастера',
+    accepted: 'Мастер назначен',
+    in_progress: 'Идёт работа',
+    done: 'Готово',
+    cancelled: 'Отменена'
+  };
+%>
 <div class="page-head">
-  <div>
-    <p class="kicker">Клиент</p>
-    <h1>Заявки</h1>
-  </div>
-  <a class="btn" href="/client/requests/new">Новая заявка</a>
+  <h1>Заявки</h1>
+  <% if (requests.length) { %>
+    <a class="btn" href="/client/requests/new">Новая заявка</a>
+  <% } %>
 </div>
 <% if (!requests.length) { %>
-  <p class="empty">Заявок пока нет. Опишите ремонт квартиры или вызов мастера — оплату с вас не берут.</p>
+  <div class="empty">
+    <p>Заявок нет.</p>
+    <a class="btn" href="/client/requests/new">Новая заявка</a>
+  </div>
 <% } else { %>
   <div class="rows">
     <% requests.forEach(function (item) { %>
       <a class="row" href="/client/requests/<%= item.id %>">
         <span class="row-title"><%= KINDS[item.kind] %></span>
-        <span class="row-status"><%= REQUEST_STATUS[item.status] %></span>
+        <span class="tag tag-<%= item.status %>"><%= REQUEST_STATUS[item.status] %></span>
         <span class="row-meta"><%= item.address %></span>
-        <span class="row-date"><%= formatDate(item.created_at) %></span>
+        <span class="row-next"><%= nextBy[item.status] || '' %> · <span class="num"><%= formatDate(item.created_at) %></span></span>
       </a>
     <% }) %>
   </div>

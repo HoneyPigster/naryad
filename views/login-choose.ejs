@@ -1,0 +1,19 @@
+<%- include('partials/head', { title, wide: true }) %>
+<h1>Вход</h1>
+<p class="lede">Два отдельных входа. Выберите свой.</p>
+<% if (errors && errors.form) { %><p class="banner is-error" role="alert"><%= errors.form %></p><% } %>
+<div class="role-pick">
+  <a class="role-choice role-choice-foreman" href="/login/foreman">
+    <%- include('partials/drawing', { role: 'foreman' }) %>
+    <p class="kicker">Прораб</p>
+    <h2>Я прораб</h2>
+    <p>Вход в кабинет квартиры.</p>
+  </a>
+  <a class="role-choice role-choice-master" href="/login/master">
+    <%- include('partials/drawing', { role: 'master' }) %>
+    <p class="kicker">Мастер</p>
+    <h2>Я мастер</h2>
+    <p>Вход в свой кабинет.</p>
+  </a>
+</div>
+<%- include('partials/foot') %>

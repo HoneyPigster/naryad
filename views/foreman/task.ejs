@@ -1,0 +1,23 @@
+<%- include('../partials/head', { title, board: true }) %>
+<p class="back"><a href="/foreman">Задачи</a></p>
+<p class="kicker"><%= SPECIALTIES[task.specialty] %></p>
+<h1><%= task.address %></h1>
+<p class="lede"><%= task.summary %></p>
+<p class="pay-note">Задача без оплаты. Деньги не списаны.</p>
+<section class="sec">
+  <h2>Кто откликнулся</h2>
+  <% if (!responses.length) { %>
+    <p class="empty">Откликов пока нет.</p>
+  <% } else { %>
+    <div class="rows">
+      <% responses.forEach(function (person) { %>
+        <div class="row">
+          <span class="row-title"><%= person.full_name %></span>
+          <a class="row-go tel" href="tel:+<%= person.phone %>"><%= formatPhone(person.phone) %></a>
+          <span class="row-meta"><%= SPECIALTIES[person.specialty] %> · <span class="num"><%= formatDate(person.created_at) %></span></span>
+        </div>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+<%- include('../partials/foot') %>

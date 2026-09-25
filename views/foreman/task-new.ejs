@@ -1,0 +1,33 @@
+<%- include('../partials/head', { title }) %>
+<p class="back"><a href="/foreman">Задачи</a></p>
+<h1>Новая задача</h1>
+<p class="price num"><%= formatMoney(price) %></p>
+<p class="price-unit">за объект</p>
+<p class="notice">Оплата не проводится. Деньги не списываются.</p>
+<form method="post" action="/foreman/tasks" class="stack">
+  <%- include('../partials/csrf') %>
+  <fieldset>
+    <legend>Специальность</legend>
+    <% Object.entries(SPECIALTIES).forEach(function ([key, label]) { %>
+      <label class="choice"><input type="radio" name="specialty" value="<%= key %>" <%= values.specialty === key ? 'checked' : '' %> required> <%= label %></label>
+    <% }) %>
+    <% if (errors.specialty) { %><p class="field-error" role="alert"><%= errors.specialty %></p><% } %>
+  </fieldset>
+  <div class="field">
+    <label for="address">Адрес</label>
+    <input id="address" name="address" required autocomplete="street-address" placeholder="Город, улица, дом, квартира" value="<%= values.address %>" <%= errors.address ? 'aria-invalid="true" aria-describedby="address-err"' : '' %>>
+    <% if (errors.address) { %><p class="field-error" id="address-err" role="alert"><%= errors.address %></p><% } %>
+  </div>
+  <div class="field">
+    <label for="summary">Что сделать</label>
+    <textarea id="summary" name="summary" required <%= errors.summary ? 'aria-invalid="true" aria-describedby="summary-err"' : '' %>><%= values.summary %></textarea>
+    <% if (errors.summary) { %><p class="field-error" id="summary-err" role="alert"><%= errors.summary %></p><% } %>
+  </div>
+  <label class="choice">
+    <input type="checkbox" name="confirm_unpaid" value="1" <%= values.confirm_unpaid ? 'checked' : '' %>>
+    Без оплаты. Деньги не списываются.
+  </label>
+  <% if (errors.confirm_unpaid) { %><p class="field-error" role="alert"><%= errors.confirm_unpaid %></p><% } %>
+  <button class="btn" type="submit">Поставить задачу без оплаты</button>
+</form>
+<%- include('../partials/foot') %>

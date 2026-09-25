@@ -104,6 +104,80 @@ function parseAmount(value) {
   return n;
 }
 
+function parseDateInput(value) {
+  const raw = String(value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) return null;
+  const [y, m, d] = raw.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== m - 1 || dt.getUTCDate() !== d) return null;
+  return raw;
+}
+
+function parseTimeInput(value) {
+  const raw = String(value || '').trim();
+  if (!raw) return null;
+  if (!/^\d{2}:\d{2}$/.test(raw)) return null;
+  const [h, m] = raw.split(':').map(Number);
+  if (h > 23 || m > 59) return null;
+  return raw;
+}
+
+function monthKey(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, '0');
+  return `${y}-${m}`;
+}
+
+function parseMonthKey(value) {
+  const raw = String(value || '').trim();
+  if (!/^\d{4}-\d{2}$/.test(raw)) return null;
+  const [y, m] = raw.split('-').map(Number);
+  if (m < 1 || m > 12) return null;
+  return `${String(y).padStart(4, '0')}-${String(m).padStart(2, '0')}`;
+}
+
+function shiftMonth(key, delta) {
+  const [y, m] = key.split('-').map(Number);
+  const dt = new Date(y, m - 1 + delta, 1);
+  return monthKey(dt);
+}
+
+function daysInMonth(key) {
+  const [y, m] = key.split('-').map(Number);
+  return new Date(y, m, 0).getDate();
+}
+
+function addMonthsToDate(isoDate, months) {
+  const [y, m, d] = isoDate.split('-').map(Number);
+  const dt = new Date(y, m - 1 + months, d);
+  if (dt.getDate() !== d) dt.setDate(0);
+  const yy = dt.getFullYear();
+  const mm = String(dt.getMonth() + 1).padStart(2, '0');
+  const dd = String(dt.getDate()).padStart(2, '0');
+  return `${yy}-${mm}-${dd}`;
+}
+
+function dateKey(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value.slice(0, 10);
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return '';
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, '0');
+  const day = String(d.getUTCDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function formatMonthTitle(key) {
+  const [y, m] = key.split('-').map(Number);
+  const title = new Intl.DateTimeFormat('ru-RU', {
+    month: 'long',
+    year: 'numeric',
+    timeZone: 'Europe/Moscow',
+  }).format(new Date(Date.UTC(y, m - 1, 1)));
+  return title.charAt(0).toUpperCase() + title.slice(1);
+}
+
 module.exports = {
   PRICES,
   ROLES,
@@ -120,4 +194,13 @@ module.exports = {
   offerLabel,
   parseId,
   parseAmount,
+  parseDateInput,
+  parseTimeInput,
+  monthKey,
+  parseMonthKey,
+  shiftMonth,
+  daysInMonth,
+  addMonthsToDate,
+  formatMonthTitle,
+  dateKey,
 };

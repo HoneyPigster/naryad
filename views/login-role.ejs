@@ -1,0 +1,29 @@
+<%- include('partials/head', { title, wide: true }) %>
+<p class="back"><a href="/login">К выбору</a></p>
+<div class="role-screen">
+  <div class="role-figure">
+    <%- include('partials/drawing', { role: role }) %>
+  </div>
+  <div>
+    <p class="kicker"><%= role === 'foreman' ? 'Прораб' : 'Мастер' %></p>
+    <h1><%= role === 'foreman' ? 'Вход прораба' : 'Вход мастера' %></h1>
+    <% if (errors.form) { %><p class="banner is-error" role="alert"><%= errors.form %></p><% } %>
+    <form method="post" action="/login/<%= role %>" class="stack">
+      <%- include('partials/csrf') %>
+      <input type="hidden" name="role" value="<%= role %>">
+      <div class="field">
+        <label for="phone">Телефон</label>
+        <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="+7 900 000-00-00" value="<%= values.phone %>" <%= values.phone ? '' : 'autofocus' %>>
+      </div>
+      <div class="field">
+        <label for="password">Пароль</label>
+        <input id="password" name="password" type="password" autocomplete="current-password" required <%= values.phone ? 'autofocus' : '' %>>
+        <p class="hint">Демо: demo1234</p>
+      </div>
+      <button class="btn" type="submit">Войти</button>
+      <p class="hint">Нет кабинета? <a href="/register/<%= role %>">Регистрация</a></p>
+    </form>
+    <%- include('partials/demo', { demoRole: role }) %>
+  </div>
+</div>
+<%- include('partials/foot') %>
