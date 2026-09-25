@@ -1,0 +1,4 @@
+Golos Text and Unbounded are used under the SIL Open Font License 1.1.
+Authors and the full license text: https://github.com/google/fonts
+(ofl/golostext and ofl/unbounded).
+The fonts are embedded so the site does not call Google at runtime.

@@ -1,0 +1,26 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Новая заявка</p>
+<h1>Что нужно сделать</h1>
+<p class="lede">Клиент не платит. Статус появится в кабинете, когда заявку возьмут.</p>
+<form method="post" action="/client/requests" class="stack">
+  <%- include('../partials/csrf') %>
+  <fieldset>
+    <legend>Тип</legend>
+    <% Object.entries(KINDS).forEach(function ([key, label]) { %>
+      <label class="choice"><input type="radio" name="kind" value="<%= key %>" <%= values.kind === key ? 'checked' : '' %> required> <%= label %></label>
+    <% }) %>
+    <% if (errors.kind) { %><p class="field-error" role="alert"><%= errors.kind %></p><% } %>
+  </fieldset>
+  <div class="field">
+    <label for="address">Адрес</label>
+    <input id="address" name="address" required autocomplete="street-address" placeholder="Город, улица, дом, квартира" value="<%= values.address %>" <%= errors.address ? 'aria-invalid="true" aria-describedby="address-err"' : '' %>>
+    <% if (errors.address) { %><p class="field-error" id="address-err" role="alert"><%= errors.address %></p><% } %>
+  </div>
+  <div class="field">
+    <label for="description">Что случилось</label>
+    <textarea id="description" name="description" required <%= errors.description ? 'aria-invalid="true" aria-describedby="description-err"' : '' %>><%= values.description %></textarea>
+    <% if (errors.description) { %><p class="field-error" id="description-err" role="alert"><%= errors.description %></p><% } %>
+  </div>
+  <button class="btn" type="submit">Отправить заявку</button>
+</form>
+<%- include('../partials/foot') %>

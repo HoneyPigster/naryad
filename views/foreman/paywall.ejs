@@ -1,0 +1,38 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Новый объект</p>
+<h1>Квартира в работу</h1>
+<div class="price-sheet">
+  <p class="price"><%= formatMoney(price) %></p>
+  <p class="price-unit">за одну квартиру</p>
+  <p class="notice">Оплата пока не проводится. Деньги не списываются. Когда появится касса, эта сумма будет за каждый новый объект.</p>
+</div>
+<% if (errors.form) { %><p class="banner is-error" role="alert"><%= errors.form %></p><% } %>
+<form method="post" action="/foreman/objects" class="stack">
+  <%- include('../partials/csrf') %>
+  <% if (values.request_id) { %>
+    <input type="hidden" name="request_id" value="<%= values.request_id %>">
+  <% } %>
+  <div class="field">
+    <label for="address">Адрес</label>
+    <input id="address" name="address" required autocomplete="street-address" value="<%= values.address %>" <%= errors.address ? 'aria-invalid="true" aria-describedby="address-err"' : '' %>>
+    <% if (errors.address) { %><p class="field-error" id="address-err" role="alert"><%= errors.address %></p><% } %>
+  </div>
+  <div class="field">
+    <label for="client_name">Клиент</label>
+    <input id="client_name" name="client_name" required autocomplete="name" value="<%= values.client_name %>" <%= errors.client_name ? 'aria-invalid="true" aria-describedby="client-err"' : '' %>>
+    <% if (errors.client_name) { %><p class="field-error" id="client-err" role="alert"><%= errors.client_name %></p><% } %>
+  </div>
+  <div class="field">
+    <label for="client_phone">Телефон клиента</label>
+    <input id="client_phone" name="client_phone" type="tel" inputmode="tel" required placeholder="+7 900 000-00-00" value="<%= values.client_phone %>" <%= errors.client_phone ? 'aria-invalid="true" aria-describedby="phone-err"' : '' %>>
+    <% if (errors.client_phone) { %><p class="field-error" id="phone-err" role="alert"><%= errors.client_phone %></p><% } %>
+  </div>
+  <label class="choice">
+    <input type="checkbox" name="confirm_unpaid" value="1">
+    Открываю объект без оплаты. Деньги не списываются.
+  </label>
+  <% if (errors.confirm_unpaid) { %><p class="field-error" role="alert"><%= errors.confirm_unpaid %></p><% } %>
+  <button class="btn" type="submit">Открыть объект без оплаты</button>
+</form>
+<p class="aside"><a href="/foreman">К объектам</a></p>
+<%- include('../partials/foot') %>

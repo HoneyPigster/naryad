@@ -1,0 +1,28 @@
+<%- include('partials/head', { title, wide: true }) %>
+<section class="cover">
+  <div>
+    <p class="kicker">Заказы на ремонт</p>
+    <h1>Квартира, сантехник, электрик — в одном наряде.</h1>
+    <p class="lede">Клиент оставляет заявку и смотрит статус. Прораб ведёт квартиру. Мастер забирает вызов, если включил приём заказов.</p>
+    <p class="actions">
+      <a class="btn" href="/register">Создать кабинет</a>
+      <a class="btn secondary" href="/login">Войти</a>
+    </p>
+  </div>
+  <dl class="roles">
+    <div>
+      <dt>Клиент</dt>
+      <dd>Заявка, адрес, описание. Без оплаты.</dd>
+    </div>
+    <div>
+      <dt>Прораб</dt>
+      <dd>Один объект — одна квартира: этапы, закупки, долг, фото по комнатам. <span class="num"><%= formatMoney(PRICES.objectRub) %></span> за объект.</dd>
+    </div>
+    <div>
+      <dt>Мастер</dt>
+      <dd>Сантехник, электрик, ремонт стиральных машин. <span class="num"><%= formatMoney(PRICES.masterMonthRub) %></span> в месяц за входящие заказы.</dd>
+    </div>
+  </dl>
+</section>
+<p class="colophon">Оплата пока не подключена. Суммы на экранах цены не списываются.</p>
+<%- include('partials/foot') %>

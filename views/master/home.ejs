@@ -1,0 +1,61 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Мастер · <%= SPECIALTIES[user.specialty] %></p>
+<h1>Заказы</h1>
+
+<% if (!user.orders_opened_unpaid) { %>
+  <div class="price-sheet">
+    <p class="price"><%= formatMoney(price) %></p>
+    <p class="price-unit">в месяц за входящие</p>
+    <p class="notice">Оплата пока не проводится. Деньги не списываются. Без этого шага новые заказы не показываются.</p>
+    <p class="actions"><a class="btn" href="/master/subscription">Открыть экран цены</a></p>
+  </div>
+<% } else { %>
+  <p class="notice tight">Входящие открыты без оплаты. <%= formatMoney(price) %> в месяц — когда подключим кассу. Деньги не списаны.</p>
+  <form method="post" action="/master/accepting" class="line">
+    <%- include('../partials/csrf') %>
+    <input type="hidden" name="accepting_orders" value="<%= user.accepting_orders ? '0' : '1' %>">
+    <span class="grow"><% if (user.accepting_orders) { %>Сейчас вы принимаете заказы.<% } else { %>Сейчас новые заказы вам не приходят.<% } %></span>
+    <button class="btn <%= user.accepting_orders ? 'secondary' : '' %>" type="submit"><%= user.accepting_orders ? 'Поставить на паузу' : 'Принимаю заказы' %></button>
+  </form>
+<% } %>
+
+<section class="section">
+  <h2>Новые заказы</h2>
+  <% if (!user.orders_opened_unpaid) { %>
+    <p class="empty">Входящие закрыты, пока вы не откроете их на экране цены. Деньги при этом не списываются.</p>
+  <% } else if (!user.accepting_orders) { %>
+    <p class="empty">Приём заказов выключен. Включите его, чтобы видеть новые вызовы.</p>
+  <% } else if (!incoming.length) { %>
+    <p class="empty">Новых заказов нет. Когда прораб или клиент предложит работу по вашей специальности, она появится здесь.</p>
+  <% } else { %>
+    <div class="rows">
+      <% incoming.forEach(function (item) { %>
+        <a class="row" href="/master/offers/<%= item.id %>">
+          <span class="row-title"><%= item.address %></span>
+          <span class="row-status"><%= item.object_id ? 'От прораба' : 'От клиента' %></span>
+          <span class="row-meta"><%= item.summary %></span>
+          <span class="row-date"><%= formatDate(item.created_at) %></span>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+
+<section class="section">
+  <h2>Мои работы</h2>
+  <% if (!mine.length) { %>
+    <p class="empty">Принятых заказов пока нет.</p>
+  <% } else { %>
+    <div class="rows">
+      <% mine.forEach(function (item) { %>
+        <a class="row" href="/master/offers/<%= item.id %>">
+          <span class="row-title"><%= item.address %></span>
+          <span class="row-status"><%= offerLabel(item) %></span>
+          <span class="row-meta"><%= item.summary %></span>
+          <span class="row-date"><%= formatDate(item.accepted_at) %></span>
+        </a>
+      <% }) %>
+    </div>
+  <% } %>
+</section>
+<%- include('../partials/foot') %>

@@ -1,0 +1,42 @@
+<%- include('partials/head', { title }) %>
+<p class="kicker">Регистрация</p>
+<h1>Кабинет по телефону</h1>
+<p class="lede">ИНН не нужен. Клиент ничего не платит.</p>
+<% if (errors.form) { %><p class="banner is-error" role="alert"><%= errors.form %></p><% } %>
+<form method="post" action="/register" class="stack">
+  <%- include('partials/csrf') %>
+  <fieldset class="roles-pick">
+    <legend>Кто вы</legend>
+    <label class="choice"><input type="radio" name="role" value="client" <%= values.role === 'client' ? 'checked' : '' %>> Клиент — оставить заявку</label>
+    <label class="choice"><input type="radio" name="role" value="foreman" <%= values.role === 'foreman' ? 'checked' : '' %>> Прораб — вести квартиру</label>
+    <label class="choice"><input type="radio" name="role" value="master" <%= values.role === 'master' ? 'checked' : '' %>> Мастер — брать выезды</label>
+    <% if (errors.role) { %><p class="field-error" role="alert"><%= errors.role %></p><% } %>
+  </fieldset>
+  <div class="specialty field">
+    <span class="label-like" id="specialty-label">Специальность</span>
+    <div role="radiogroup" aria-labelledby="specialty-label">
+      <% Object.entries(SPECIALTIES).forEach(function ([key, label]) { %>
+        <label class="choice"><input type="radio" name="specialty" value="<%= key %>" <%= values.specialty === key ? 'checked' : '' %>> <%= label %></label>
+      <% }) %>
+    </div>
+    <% if (errors.specialty) { %><p class="field-error" role="alert"><%= errors.specialty %></p><% } %>
+  </div>
+  <div class="field">
+    <label for="full_name">Как к вам обращаться</label>
+    <input id="full_name" name="full_name" autocomplete="name" required value="<%= values.full_name %>" <%= errors.full_name ? 'aria-invalid="true" aria-describedby="name-err"' : '' %>>
+    <% if (errors.full_name) { %><p class="field-error" id="name-err" role="alert"><%= errors.full_name %></p><% } %>
+  </div>
+  <div class="field">
+    <label for="phone">Телефон</label>
+    <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="+7 900 000-00-00" value="<%= values.phone %>" <%= errors.phone ? 'aria-invalid="true" aria-describedby="phone-err"' : '' %>>
+    <% if (errors.phone) { %><p class="field-error" id="phone-err" role="alert"><%= errors.phone %></p><% } %>
+  </div>
+  <div class="field">
+    <label for="password">Пароль</label>
+    <input id="password" name="password" type="password" autocomplete="new-password" required minlength="8" <%= errors.password ? 'aria-invalid="true" aria-describedby="password-err"' : '' %>>
+    <% if (errors.password) { %><p class="field-error" id="password-err" role="alert"><%= errors.password %></p><% } %>
+  </div>
+  <button class="btn" type="submit">Создать кабинет</button>
+</form>
+<p class="aside">Уже есть кабинет? <a href="/login">Войти</a></p>
+<%- include('partials/foot') %>

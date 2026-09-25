@@ -1,0 +1,23 @@
+<%- include('../partials/head', { title }) %>
+<div class="page-head">
+  <div>
+    <p class="kicker">Клиент</p>
+    <h1>Заявки</h1>
+  </div>
+  <a class="btn" href="/client/requests/new">Новая заявка</a>
+</div>
+<% if (!requests.length) { %>
+  <p class="empty">Заявок пока нет. Опишите ремонт квартиры или вызов мастера — оплату с вас не берут.</p>
+<% } else { %>
+  <div class="rows">
+    <% requests.forEach(function (item) { %>
+      <a class="row" href="/client/requests/<%= item.id %>">
+        <span class="row-title"><%= KINDS[item.kind] %></span>
+        <span class="row-status"><%= REQUEST_STATUS[item.status] %></span>
+        <span class="row-meta"><%= item.address %></span>
+        <span class="row-date"><%= formatDate(item.created_at) %></span>
+      </a>
+    <% }) %>
+  </div>
+<% } %>
+<%- include('../partials/foot') %>

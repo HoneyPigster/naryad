@@ -1,0 +1,22 @@
+{
+  "name": "naryad",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Наряд — заявки на ремонт, кабинет прораба и мастеров",
+  "scripts": {
+    "start": "node src/server.js",
+    "verify": "node scripts/verify-flow.js"
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "connect-pg-simple": "^10.0.0",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-session": "^1.18.1",
+    "multer": "^2.0.2",
+    "pg": "^8.16.0"
+  }
+}

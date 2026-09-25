@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+.git
+.env
+data
+*.md
+docs
+scripts
+test

@@ -1,0 +1,34 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker"><%= SPECIALTIES[offer.specialty] %> · <%= offer.object_id ? 'от прораба' : 'от клиента' %></p>
+<h1><%= offer.address %></h1>
+<p class="status-line"><span class="status"><%= offerLabel(offer) %></span> <span class="num"><%= formatDate(offer.accepted_at || offer.created_at) %></span></p>
+<dl class="facts">
+  <div><dt>Задача</dt><dd><%= offer.summary %></dd></div>
+  <div><dt>Контакт</dt><dd><%= offer.contact_name %> · <span class="num"><%= formatPhone(offer.contact_phone) %></span></dd></div>
+  <% if (offer.status_note) { %>
+    <div><dt>Заметка к статусу</dt><dd><%= offer.status_note %></dd></div>
+  <% } %>
+</dl>
+<% if (offer.status === 'open') { %>
+  <form method="post" action="/master/offers/<%= offer.id %>/accept" class="section">
+    <%- include('../partials/csrf') %>
+    <button class="btn" type="submit">Принять заказ</button>
+  </form>
+<% } else if (offer.master_id === user.id) { %>
+  <form method="post" action="/master/offers/<%= offer.id %>/status" class="stack section">
+    <%- include('../partials/csrf') %>
+    <fieldset>
+      <legend>Статус работы</legend>
+      <label class="choice"><input type="radio" name="job_status" value="accepted" <%= offer.job_status === 'accepted' ? 'checked' : '' %>> Принят</label>
+      <label class="choice"><input type="radio" name="job_status" value="in_progress" <%= offer.job_status === 'in_progress' ? 'checked' : '' %>> В работе</label>
+      <label class="choice"><input type="radio" name="job_status" value="done" <%= offer.job_status === 'done' ? 'checked' : '' %>> Готово</label>
+    </fieldset>
+    <div class="field">
+      <label for="status_note">Заметка к статусу</label>
+      <textarea id="status_note" name="status_note" maxlength="500"><%= offer.status_note || '' %></textarea>
+    </div>
+    <button class="btn secondary" type="submit">Сохранить статус</button>
+  </form>
+<% } %>
+<p class="aside"><a href="/master">К заказам</a></p>
+<%- include('../partials/foot') %>

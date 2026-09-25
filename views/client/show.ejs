@@ -1,0 +1,41 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Заявка № <%= request.id %></p>
+<h1><%= KINDS[request.kind] %></h1>
+<p class="status-line"><span class="status"><%= statusLabel %></span> <span class="num"><%= formatDate(request.updated_at) %></span></p>
+<dl class="facts">
+  <div><dt>Адрес</dt><dd><%= request.address %></dd></div>
+  <div><dt>Описание</dt><dd><%= request.description %></dd></div>
+  <% if (request.status_note) { %>
+    <div><dt>Заметка к статусу</dt><dd><%= request.status_note %></dd></div>
+  <% } %>
+</dl>
+<section class="section">
+  <h2>Вызовы</h2>
+  <% if (!offers.length) { %>
+    <p class="empty">Мастера ещё не вызывали. Для ремонта квартиры это сделает прораб, когда возьмёт объект.</p>
+  <% } else { %>
+    <ul class="plain">
+      <% offers.forEach(function (offer) { %>
+        <li>
+          <strong><%= SPECIALTIES[offer.specialty] %></strong>
+          — <%= offerLabel(offer) %>
+          <% if (offer.master_name) { %>
+            · <%= offer.master_name %>, <%= formatPhone(offer.master_phone) %>
+          <% } %>
+          <span class="num"><%= formatDate(offer.accepted_at || offer.created_at) %></span>
+          <% if (offer.summary && request.kind === 'apartment') { %>
+            <span class="block"><%= offer.summary %></span>
+          <% } %>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+</section>
+<% if (request.status === 'new' || request.status === 'offered') { %>
+  <form method="post" action="/client/requests/<%= request.id %>/cancel" class="section">
+    <%- include('../partials/csrf') %>
+    <button class="text-btn danger" type="submit">Отменить заявку</button>
+  </form>
+<% } %>
+<p class="aside"><a href="/client">Все заявки</a></p>
+<%- include('../partials/foot') %>

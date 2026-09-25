@@ -1,0 +1,7 @@
+<%- include('partials/head', { title }) %>
+<h1><%= title %></h1>
+<p class="lede"><%= message %></p>
+<p class="actions">
+  <a class="btn" href="<%= user ? HOME[user.role] : '/' %>">На главную кабинета</a>
+</p>
+<%- include('partials/foot') %>

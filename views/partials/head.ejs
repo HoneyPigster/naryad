@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %> — Наряд</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/app.css">
+  <meta name="theme-color" content="#ebe6dc">
+</head>
+<body>
+  <a class="skip" href="#content">К содержанию</a>
+  <header class="top">
+    <a class="mark" href="<%= user ? HOME[user.role] : '/' %>">Наряд</a>
+    <% if (user) { %>
+      <div class="who">
+        <p class="who-role">
+          <%= ROLES[user.role] %><% if (user.role === 'master' && user.specialty) { %> · <%= SPECIALTIES[user.specialty] %><% } %>
+          <span class="who-name"><%= user.full_name %></span>
+        </p>
+        <form method="post" action="/logout">
+          <input type="hidden" name="_csrf" value="<%= csrf %>">
+          <button class="text-btn" type="submit">Выйти</button>
+        </form>
+      </div>
+    <% } else { %>
+      <nav class="who" aria-label="Вход">
+        <a href="/login">Войти</a>
+        <a class="btn" href="/register">Регистрация</a>
+      </nav>
+    <% } %>
+  </header>
+  <main id="content" class="wrap<%= typeof wide !== 'undefined' && wide ? ' wide' : '' %>">
+    <% if (flash) { %>
+      <p class="banner <%= flash.type === 'error' ? 'is-error' : 'is-ok' %>" role="status"><%= flash.text %></p>
+    <% } %>
