@@ -83,6 +83,7 @@ function rejectCsrf(req, res) {
 
 function checkCsrf(req, res, next) {
   if (req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS') return next();
+  if (req.path === '/inspection/test/payment-event') return next();
   const type = req.headers['content-type'] || '';
   if (type.includes('multipart/form-data')) return next();
   if (!csrfOk(req)) return rejectCsrf(req, res);

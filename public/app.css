@@ -1287,6 +1287,127 @@ a.tel { text-underline-offset: 0.15em; }
 }
 .cal-day.is-on .cal-count { color: #f6d7a8; }
 
+/* —— Приёмка (additive) —— */
+.home-tile-inspection {
+  --role: var(--accent);
+}
+.home-tile-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.home-help-inspection {
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+.section { margin-top: 2rem; }
+.section h2 .num { color: var(--muted); font-weight: 500; }
+.aside {
+  margin-top: var(--space-5);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+.aside a { color: inherit; }
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.75rem;
+  align-items: center;
+}
+.line .grow { flex: 1 1 14rem; overflow-wrap: anywhere; }
+.line form, .inline-add {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  align-items: center;
+}
+.line select, .inline-add input,
+.line input, .inline-add select {
+  width: auto;
+  min-width: 10rem;
+  flex: 1 1 10rem;
+}
+.inline-add { margin-top: 0.8rem; }
+.row-status { text-align: right; align-self: start; }
+.row-date { color: var(--muted); font-size: 0.92rem; }
+.debt { margin: 0; text-align: left; }
+.debt-label { display: block; color: var(--muted); font-size: 0.85rem; }
+.debt-sum {
+  display: block;
+  font-family: var(--display);
+  font-size: 1.85rem;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+.progress-bar {
+  margin-top: 0.45rem;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  max-width: 14rem;
+}
+.progress-bar > .progress-fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  width: 0;
+}
+.progress-fill.pct-0 { width: 0%; }
+.progress-fill.pct-5 { width: 5%; }
+.progress-fill.pct-10 { width: 10%; }
+.progress-fill.pct-15 { width: 15%; }
+.progress-fill.pct-20 { width: 20%; }
+.progress-fill.pct-25 { width: 25%; }
+.progress-fill.pct-30 { width: 30%; }
+.progress-fill.pct-35 { width: 35%; }
+.progress-fill.pct-40 { width: 40%; }
+.progress-fill.pct-45 { width: 45%; }
+.progress-fill.pct-50 { width: 50%; }
+.progress-fill.pct-55 { width: 55%; }
+.progress-fill.pct-60 { width: 60%; }
+.progress-fill.pct-65 { width: 65%; }
+.progress-fill.pct-70 { width: 70%; }
+.progress-fill.pct-75 { width: 75%; }
+.progress-fill.pct-80 { width: 80%; }
+.progress-fill.pct-85 { width: 85%; }
+.progress-fill.pct-90 { width: 90%; }
+.progress-fill.pct-95 { width: 95%; }
+.progress-fill.pct-100 { width: 100%; }
+.check-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.55rem;
+}
+.check-actions form { margin: 0; }
+.sticky-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 2;
+  margin-top: 1.5rem;
+  padding: 0.75rem 0 0.35rem;
+  background: linear-gradient(to top, var(--bg) 65%, transparent);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.price-sheet { margin-top: var(--space-4); }
+.text-btn.danger { color: var(--warn); }
+.status { font-weight: 600; }
+
+@media (min-width: 800px) {
+  .home-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .obj-head {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+    align-items: flex-end;
+  }
+  .debt { text-align: right; }
+}
+
 @media (min-width: 800px) {
   .master-panel .split { grid-template-columns: 1fr 1fr; }
 }

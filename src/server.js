@@ -5,6 +5,8 @@ const PgSession = require('connect-pg-simple')(session);
 const { pool, migrate } = require('./db');
 const { mount } = require('./routes');
 const { photoDir } = require('./routes');
+const { mount: mountInspection } = require('./inspection/routes');
+const { ensureRoot: ensureInspectionRoot } = require('./inspection/storage');
 const {
   loadUser,
   ensureCsrf,
@@ -23,6 +25,7 @@ const {
   ROOMS,
   HOME,
   PRICES,
+  INSPECTION_PRICE_RUB,
 } = require('./text');
 
 function sessionSecret() {
@@ -90,6 +93,7 @@ function createApp() {
     res.locals.ROOMS = ROOMS;
     res.locals.HOME = HOME;
     res.locals.PRICES = PRICES;
+    res.locals.INSPECTION_PRICE_RUB = INSPECTION_PRICE_RUB;
     next();
   });
   app.use(takeFlash);
@@ -98,6 +102,7 @@ function createApp() {
   app.use(checkCsrf);
 
   mount(app);
+  mountInspection(app);
 
   app.use((req, res) => {
     res.status(404).render('error', {
@@ -126,6 +131,7 @@ function createApp() {
 
 async function start() {
   await fsMkdir();
+  await ensureInspectionRoot();
   await migrate();
   const port = Number(process.env.PORT || 3000);
   const app = createApp();

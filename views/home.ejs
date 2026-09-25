@@ -23,6 +23,17 @@
       <a class="btn secondary" href="/login/master">Войти</a>
     </div>
   </article>
+  <article class="home-tile home-tile-inspection">
+    <p class="kicker">Приёмка</p>
+    <h2>Приёмка помещения</h2>
+    <p>Чек-лист, дефекты с фото и замерами, итоговый отчёт по готовой квартире или офису.</p>
+    <p class="home-price"><span class="num"><%= formatMoney(INSPECTION_PRICE_RUB) %></span> <span class="home-unit">за объект</span></p>
+    <p class="home-tile-note">Деньги не списываются.</p>
+    <div class="home-actions">
+      <a class="btn" href="/inspection">Открыть приёмку</a>
+      <a class="btn secondary" href="/login/foreman">Войти</a>
+    </div>
+  </article>
 </section>
 
 <section class="home-story" aria-labelledby="story-title">
@@ -51,11 +62,22 @@
     <article class="home-help-block home-help-master">
       <p class="kicker">Частному мастеру</p>
       <h3>Заявки и ясность по деньгам</h3>
-      <p>Для клиентов частного мастера и его выездов — порядок без мессенджера.</p>
+      <p>Для заказчиков частного мастера и его выездов — порядок без мессенджера.</p>
       <ul>
         <li>Заявки</li>
         <li>Гарантия на работу</li>
         <li>Кто должен доплатить</li>
+      </ul>
+    </article>
+    <article class="home-help-block home-help-inspection">
+      <p class="kicker">Приёмка</p>
+      <h3>Готовое помещение под запись</h3>
+      <p>Фиксируете осмотр так, чтобы потом можно было открыть отчёт, а не искать переписку.</p>
+      <ul>
+        <li>Чек-лист</li>
+        <li>Дефекты и фото</li>
+        <li>Измерения</li>
+        <li>PDF-отчёт</li>
       </ul>
     </article>
   </div>

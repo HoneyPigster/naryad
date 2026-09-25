@@ -1,0 +1,16 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Общий доступ</p>
+<h1><%= share.title %></h1>
+<p class="lede"><%= share.address %></p>
+<p class="notice">Только просмотр. Это фиксация осмотра, не юридическое заключение.</p>
+<dl class="facts">
+  <div><dt>Прогресс</dt><dd class="num"><%= progress.percent %>%</dd></div>
+  <div><dt>Дефектов</dt><dd class="num"><%= defects.length %></dd></div>
+  <div><dt>Критические</dt><dd class="num"><%= severity.CRITICAL %></dd></div>
+</dl>
+<ul class="plain">
+  <% defects.forEach(function (d) { %>
+    <li><strong><%= d.title %></strong> · <%= SEVERITIES[d.severity] %> · <%= d.room_name || 'Общее' %></li>
+  <% }) %>
+</ul>
+<%- include('../partials/foot') %>

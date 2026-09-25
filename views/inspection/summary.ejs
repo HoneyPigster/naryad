@@ -1,0 +1,58 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Итоги</p>
+<h1><%= inspection.title %></h1>
+<p class="lede"><%= inspection.address %></p>
+<section class="section">
+  <h2>Сводка</h2>
+  <dl class="facts">
+    <div><dt>Прогресс</dt><dd class="num"><%= progress.percent %>%</dd></div>
+    <div><dt>Дефектов</dt><dd class="num"><%= defects.length %></dd></div>
+    <div><dt>Критические</dt><dd class="num"><%= severity.CRITICAL %></dd></div>
+    <div><dt>Серьёзные</dt><dd class="num"><%= severity.MAJOR %></dd></div>
+    <div><dt>Незначительные</dt><dd class="num"><%= severity.MINOR %></dd></div>
+  </dl>
+</section>
+<section class="section">
+  <h2>Дефекты</h2>
+  <div class="rows">
+    <% defects.forEach(function (d) { %>
+      <a class="row" href="/inspection/defects/<%= d.id %>">
+        <div>
+          <div class="row-title"><%= d.title %></div>
+          <div class="row-meta"><%= SEVERITIES[d.severity] %> · <%= DEFECT_STATUSES[d.status] %></div>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+</section>
+<section class="section">
+  <h2>Отчёт</h2>
+  <% if (reportVersion) { %>
+    <p class="meta">Версия <%= reportVersion.version %> · <%= formatDate(reportVersion.created_at) %></p>
+    <p class="actions"><a class="btn" href="/inspection/runs/<%= inspection.id %>/report">Открыть отчёт</a></p>
+  <% } else { %>
+    <p class="empty">Отчёт ещё не сформирован.</p>
+  <% } %>
+  <form method="post" action="/inspection/runs/<%= inspection.id %>/report">
+    <%- include('../partials/csrf') %>
+    <button class="btn secondary" type="submit"><%= reportVersion ? 'Сформировать новую версию' : 'Сформировать отчёт' %></button>
+  </form>
+  <form method="post" action="/inspection/runs/<%= inspection.id %>/share">
+    <%- include('../partials/csrf') %>
+    <button class="text-btn" type="submit">Создать ссылку для просмотра</button>
+  </form>
+  <form method="post" action="/inspection/runs/<%= inspection.id %>/follow-up">
+    <%- include('../partials/csrf') %>
+    <button class="btn" type="submit">Начать повторную проверку</button>
+  </form>
+</section>
+<section class="section">
+  <h2>История</h2>
+  <ul class="plain">
+    <% history.forEach(function (h) { %>
+      <li><span class="meta"><%= formatDate(h.created_at) %></span> — <%= h.full_name || 'Система' %>: <%= h.action %></li>
+    <% }) %>
+  </ul>
+</section>
+<p class="aside"><a href="/inspection">К списку приёмок</a></p>
+<%- include('../partials/foot') %>

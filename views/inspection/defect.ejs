@@ -1,0 +1,82 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Дефект № <%= defect.id %></p>
+<h1><%= defect.title %></h1>
+<p class="notice">Критичность — не юридическая оценка.</p>
+<dl class="facts">
+  <div><dt>Описание</dt><dd><%= defect.description || '—' %></dd></div>
+  <div><dt>Критичность</dt><dd><%= SEVERITIES[defect.severity] %></dd></div>
+  <div><dt>Статус</dt><dd><%= DEFECT_STATUSES[defect.status] %></dd></div>
+  <div><dt>Место</dt><dd><%= defect.location_description || '—' %></dd></div>
+</dl>
+
+<section class="section">
+  <h2>Фото <span class="num"><%= photos.length %></span></h2>
+  <% if (photos.length) { %>
+    <ul class="photos">
+      <% photos.forEach(function (p) { %>
+        <li>
+          <img src="/inspection/defect-photos/<%= p.id %>" alt="<%= PHOTO_KINDS[p.kind] %>">
+          <div class="photo-meta"><span><%= PHOTO_KINDS[p.kind] %></span></div>
+        </li>
+      <% }) %>
+    </ul>
+  <% } %>
+  <form class="stack tight" method="post" action="/inspection/defects/<%= defect.id %>/photos" enctype="multipart/form-data">
+    <%- include('../partials/csrf') %>
+    <div class="field">
+      <label for="kind">Тип снимка</label>
+      <select id="kind" name="kind">
+        <% Object.keys(PHOTO_KINDS).forEach(function (key) { %>
+          <option value="<%= key %>"><%= PHOTO_KINDS[key] %></option>
+        <% }) %>
+      </select>
+    </div>
+    <div class="field">
+      <label for="photo">+ Фото</label>
+      <input id="photo" type="file" name="photo" accept="image/jpeg,image/png,image/webp,capture=camera" required>
+    </div>
+    <button class="btn" type="submit">Сохранить фото</button>
+  </form>
+</section>
+
+<section class="section">
+  <h2>Замеры</h2>
+  <ul class="plain">
+    <% measurements.forEach(function (m) { %>
+      <li><%= MEASURE_TYPES[m.measure_type] %>: <strong class="num"><%= m.value_numeric %> <%= MEASURE_UNITS[m.unit] %></strong> <%= m.note %></li>
+    <% }) %>
+  </ul>
+  <p class="meta">Число само по себе не означает нарушение нормы. Нормативные выводы — только после проверки документации.</p>
+  <form class="inline-add" method="post" action="/inspection/defects/<%= defect.id %>/measurements">
+    <%- include('../partials/csrf') %>
+    <select name="measure_type" required>
+      <% Object.keys(MEASURE_TYPES).forEach(function (key) { %>
+        <option value="<%= key %>"><%= MEASURE_TYPES[key] %></option>
+      <% }) %>
+    </select>
+    <input name="value_numeric" inputmode="decimal" placeholder="Значение" required>
+    <select name="unit" required>
+      <% Object.keys(MEASURE_UNITS).forEach(function (key) { %>
+        <option value="<%= key %>"><%= MEASURE_UNITS[key] %></option>
+      <% }) %>
+    </select>
+    <input name="note" placeholder="Заметка" maxlength="200">
+    <button class="btn secondary" type="submit">Добавить</button>
+  </form>
+</section>
+
+<section class="section">
+  <h2>Статус</h2>
+  <form class="inline-add" method="post" action="/inspection/defects/<%= defect.id %>/status">
+    <%- include('../partials/csrf') %>
+    <select name="status">
+      <% Object.keys(DEFECT_STATUSES).forEach(function (key) { %>
+        <option value="<%= key %>" <%= defect.status === key ? 'selected' : '' %>><%= DEFECT_STATUSES[key] %></option>
+      <% }) %>
+    </select>
+    <button class="btn secondary" type="submit">Обновить</button>
+  </form>
+</section>
+
+<p class="aside"><a href="/inspection/runs/<%= defect.inspection_id %>">К осмотру</a></p>
+<%- include('../partials/foot') %>

@@ -1,7 +1,10 @@
 const PRICES = {
   objectRub: 690,
   masterMonthRub: 490,
+  inspectionObjectRub: 990,
 };
+
+const INSPECTION_PRICE_RUB = 990;
 
 const ROLES = {
   client: 'Клиент',
@@ -180,6 +183,7 @@ function formatMonthTitle(key) {
 
 module.exports = {
   PRICES,
+  INSPECTION_PRICE_RUB,
   ROLES,
   KINDS,
   SPECIALTIES,

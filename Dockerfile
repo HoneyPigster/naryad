@@ -13,6 +13,7 @@ COPY docker-entrypoint.sh /docker-entrypoint.sh
 COPY src ./src
 COPY views ./views
 COPY public ./public
+COPY assets ./assets
 
 RUN chmod +x /docker-entrypoint.sh \
   && mkdir -p /data/photos \

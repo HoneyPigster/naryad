@@ -1,0 +1,19 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Приёмка</p>
+<h1>Открыть приёмку</h1>
+<p class="lede"><%= project.title %> · <%= project.address %></p>
+<div class="price-sheet">
+  <div class="price num"><%= formatMoney(price) %></div>
+  <p class="price-unit">за объект приёмки</p>
+  <p class="notice">Деньги не списываются. Оплата ещё не подключена — доступ открывается без платежа.</p>
+</div>
+<form class="stack" method="post" action="/inspection/projects/<%= project.id %>/open">
+  <%- include('../partials/csrf') %>
+  <label class="choice">
+    <input type="checkbox" name="confirm_unpaid" value="1" required>
+    Открыть приёмку без оплаты. Деньги не списываются.
+  </label>
+  <button class="btn" type="submit">Открыть приёмку без оплаты</button>
+</form>
+<p class="aside"><a href="/inspection">Отмена</a></p>
+<%- include('../partials/foot') %>

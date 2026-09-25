@@ -1,0 +1,32 @@
+<%- include('../partials/head', { title }) %>
+<div class="page-head">
+  <div>
+    <p class="kicker">Приёмка</p>
+    <h1>Мои приёмки</h1>
+  </div>
+  <a class="btn" href="/inspection/new">Создать приёмку</a>
+</div>
+<% if (!projects.length) { %>
+  <p class="empty">Пока нет приёмок. Создайте объект и пройдите осмотр с телефона — пункты, дефекты, фото и отчёт.</p>
+<% } else { %>
+  <div class="rows">
+    <% projects.forEach(function (p) { %>
+      <a class="row" href="/inspection/projects/<%= p.id %>">
+        <div>
+          <div class="row-title"><%= p.title %></div>
+          <div class="row-meta"><%= p.address %></div>
+          <% if (p.progress) { %>
+            <div class="row-meta"><span class="num"><%= p.progress.percent %>%</span> · замечаний по пунктам: <%= p.progress.defect %></div>
+            <div class="progress-bar" aria-hidden="true"><span class="progress-fill pct-<%= Math.min(100, Math.round((p.progress.percent || 0) / 5) * 5) %>"></span></div>
+          <% } %>
+        </div>
+        <div class="row-status">
+          <div><%= PROJECT_STATUS[p.status] || p.status %></div>
+          <div class="row-date"><%= formatDate(p.created_at) %></div>
+        </div>
+      </a>
+    <% }) %>
+  </div>
+<% } %>
+<p class="aside"><a href="/">На главную</a> · кабинет: <a href="<%= HOME[user.role] %>"><%= ROLES[user.role] %></a></p>
+<%- include('../partials/foot') %>

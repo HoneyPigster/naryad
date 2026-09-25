@@ -20,6 +20,10 @@ const pool = new Pool({ connectionString: databaseUrl() });
 async function migrate() {
   const sql = fs.readFileSync(path.join(__dirname, 'schema.sql'), 'utf8');
   await pool.query(sql);
+  const inspectionSql = fs.readFileSync(path.join(__dirname, 'inspection', 'schema.sql'), 'utf8');
+  await pool.query(inspectionSql);
+  const { seedInspectionCatalog } = require('./inspection/seed');
+  await seedInspectionCatalog(pool);
 }
 
 async function withTx(fn) {

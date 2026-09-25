@@ -1,0 +1,27 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Завершение</p>
+<h1>Приёмка завершена?</h1>
+<dl class="facts">
+  <div><dt>Проверено</dt><dd class="num"><%= progress.checked %> / <%= progress.total %></dd></div>
+  <div><dt>Замечаний (пункты)</dt><dd class="num"><%= progress.defect %></dd></div>
+  <div><dt>Дефектов</dt><dd class="num"><%= defectsCount %></dd></div>
+  <div><dt>Не проверено</dt><dd class="num"><%= progress.unchecked %></dd></div>
+</dl>
+<% if (progress.unchecked > 0) { %>
+  <p class="banner is-error">⚠ <%= progress.unchecked %> пунктов остались непроверенными.</p>
+<% } %>
+<div class="actions">
+  <a class="btn secondary" href="/inspection/runs/<%= inspection.id %>">Вернуться</a>
+  <form method="post" action="/inspection/runs/<%= inspection.id %>/complete">
+    <%- include('../partials/csrf') %>
+    <button class="btn" type="submit">Завершить</button>
+  </form>
+  <% if (progress.unchecked > 0) { %>
+    <form method="post" action="/inspection/runs/<%= inspection.id %>/complete">
+      <%- include('../partials/csrf') %>
+      <input type="hidden" name="force" value="1">
+      <button class="btn secondary" type="submit">Завершить всё равно</button>
+    </form>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

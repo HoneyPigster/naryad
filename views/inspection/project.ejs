@@ -1,0 +1,68 @@
+<%- include('../partials/head', { title }) %>
+<div class="obj-head">
+  <div>
+    <p class="kicker">Приёмка</p>
+    <h1><%= project.title %></h1>
+    <p class="meta"><%= project.address %></p>
+  </div>
+  <% if (progress) { %>
+    <p class="debt">
+      <span class="debt-label">Прогресс</span>
+      <span class="debt-sum num"><%= progress.percent %>%</span>
+    </p>
+  <% } %>
+</div>
+<% if (project.opened_unpaid) { %>
+  <p class="banner is-ok">Деньги не списаны. Доступ к приёмке открыт.</p>
+<% } %>
+<dl class="facts">
+  <div><dt>Тип</dt><dd><%= PROPERTY_TYPES[project.property_type] %></dd></div>
+  <div><dt>Отделка</dt><dd><%= FINISH_TYPES[project.finish_type] %></dd></div>
+  <div><dt>Статус</dt><dd><%= PROJECT_STATUS[project.status] %></dd></div>
+</dl>
+
+<section class="section">
+  <h2>Помещения <span class="num"><%= rooms.length %></span></h2>
+  <ul class="plain">
+    <% rooms.forEach(function (room) { %>
+      <li class="line">
+        <span class="grow"><strong><%= room.name %></strong> · <%= ROOM_KINDS[room.kind] %></span>
+        <% if (project.status !== 'COMPLETED' && project.status !== 'ARCHIVED') { %>
+          <form method="post" action="/inspection/projects/<%= project.id %>/rooms/<%= room.id %>/delete">
+            <%- include('../partials/csrf') %>
+            <button class="text-btn danger" type="submit">Удалить</button>
+          </form>
+        <% } %>
+      </li>
+    <% }) %>
+  </ul>
+  <form class="inline-add" method="post" action="/inspection/projects/<%= project.id %>/rooms">
+    <%- include('../partials/csrf') %>
+    <input name="name" placeholder="Название" required maxlength="80">
+    <select name="kind" required>
+      <% Object.keys(ROOM_KINDS).forEach(function (key) { %>
+        <option value="<%= key %>"><%= ROOM_KINDS[key] %></option>
+      <% }) %>
+    </select>
+    <button class="btn secondary" type="submit">Добавить</button>
+  </form>
+</section>
+
+<section class="section sticky-actions">
+  <% if (inspection && (inspection.status === 'IN_PROGRESS' || inspection.status === 'PAUSED')) { %>
+    <a class="btn" href="/inspection/runs/<%= inspection.id %>">Продолжить приёмку</a>
+    <form method="post" action="/inspection/runs/<%= inspection.id %>/pause" style="display:inline">
+      <%- include('../partials/csrf') %>
+      <button class="btn secondary" type="submit">Пауза</button>
+    </form>
+  <% } else if (inspection && inspection.status === 'COMPLETED') { %>
+    <a class="btn" href="/inspection/runs/<%= inspection.id %>/summary">Итоги и отчёт</a>
+  <% } else { %>
+    <form method="post" action="/inspection/projects/<%= project.id %>/start">
+      <%- include('../partials/csrf') %>
+      <button class="btn" type="submit" <%= rooms.length ? '' : 'disabled' %>>Начать приёмку</button>
+    </form>
+  <% } %>
+</section>
+<p class="aside"><a href="/inspection">К списку</a></p>
+<%- include('../partials/foot') %>

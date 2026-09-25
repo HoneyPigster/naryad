@@ -99,17 +99,33 @@ function showRegister(res, values, errors) {
   });
 }
 
+function safeNext(raw) {
+  const value = String(raw || '').trim();
+  if (!value.startsWith('/') || value.startsWith('//') || value.includes('\\')) return null;
+  if (value.startsWith('/login') || value.startsWith('/register')) return null;
+  return value;
+}
+
 function loginForm(req, res) {
-  if (res.locals.user) return res.redirect(303, homeFor(res.locals.user.role));
+  if (res.locals.user) {
+    const next = safeNext(req.query.next);
+    return res.redirect(303, next || homeFor(res.locals.user.role));
+  }
   if (req.params.role && !askedRole(req)) return res.redirect(303, '/login');
   const role = askedRole(req);
-  return showLogin(res, role, {}, { phone: String(req.query.phone || '').trim() });
+  return showLogin(res, role, {}, {
+    phone: String(req.query.phone || '').trim(),
+    next: safeNext(req.query.next) || '',
+  });
 }
 
 async function loginPost(req, res, next) {
   const phone = normalizePhone(req.body.phone);
   const password = String(req.body.password || '');
-  const values = { phone: String(req.body.phone || '').trim() };
+  const values = {
+    phone: String(req.body.phone || '').trim(),
+    next: safeNext(req.body.next) || '',
+  };
   const role = askedRole(req) || (req.body.role === 'foreman' || req.body.role === 'master' ? req.body.role : '');
   const key = loginKey(phone || values.phone, req);
   if (tooManyLogins(key)) {
@@ -131,7 +147,8 @@ async function loginPost(req, res, next) {
       return showLogin(res, role, { form: 'Неверный телефон или пароль.' }, values);
     }
     clearLoginFail(key);
-    return startSession(req, res, next, user.id, homeFor(user.role));
+    const dest = values.next || homeFor(user.role);
+    return startSession(req, res, next, user.id, dest);
   } catch (error) {
     return next(error);
   }

@@ -1,0 +1,47 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Дефект</p>
+<h1>Зафиксировать замечание</h1>
+<p class="notice">Критичность помогает сортировать замечания и приоритет устранения, но сама по себе не является юридической оценкой.</p>
+<% if (templates.length) { %>
+  <p class="meta">Быстрые формулировки:</p>
+  <p class="actions">
+    <% templates.forEach(function (t) { %>
+      <a class="btn secondary" href="/inspection/runs/<%= inspection.id %>/defects/new?tpl=<%= t.id %><%= values.item_result_id ? ('&result=' + values.item_result_id) : '' %><%= values.room_id ? ('&room=' + values.room_id) : '' %>"><%= t.title %></a>
+    <% }) %>
+  </p>
+<% } %>
+<form class="stack" method="post" action="/inspection/runs/<%= inspection.id %>/defects">
+  <%- include('../partials/csrf') %>
+  <input type="hidden" name="checklist_item_id" value="<%= values.checklist_item_id %>">
+  <input type="hidden" name="item_result_id" value="<%= values.item_result_id %>">
+  <div class="field">
+    <label for="dtitle">Заголовок</label>
+    <input id="dtitle" name="title" value="<%= values.title %>" required maxlength="160">
+  </div>
+  <div class="field">
+    <label for="description">Описание</label>
+    <textarea id="description" name="description" maxlength="4000"><%= values.description %></textarea>
+  </div>
+  <div class="field">
+    <label for="room_id">Помещение</label>
+    <select id="room_id" name="room_id">
+      <option value="">Общее</option>
+      <% rooms.forEach(function (r) { %>
+        <option value="<%= r.id %>" <%= String(values.room_id) === String(r.id) ? 'selected' : '' %>><%= r.name %></option>
+      <% }) %>
+    </select>
+  </div>
+  <div class="field">
+    <label for="location_description">Где именно</label>
+    <input id="location_description" name="location_description" value="<%= values.location_description %>" maxlength="200" placeholder="Левое окно, нижний угол">
+  </div>
+  <fieldset>
+    <legend>Критичность</legend>
+    <% Object.keys(SEVERITIES).forEach(function (key) { %>
+      <label class="choice"><input type="radio" name="severity" value="<%= key %>" <%= values.severity === key ? 'checked' : '' %>> <%= SEVERITIES[key] %></label>
+    <% }) %>
+  </fieldset>
+  <button class="btn" type="submit">Сохранить дефект</button>
+</form>
+<p class="aside"><a href="/inspection/runs/<%= inspection.id %>">Назад к осмотру</a></p>
+<%- include('../partials/foot') %>

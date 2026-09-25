@@ -1,0 +1,51 @@
+<%- include('../partials/head', { title }) %>
+<p class="kicker">Приёмка</p>
+<h1>Новая приёмка</h1>
+<p class="lede">Укажите объект. Чек-лист подстроится под тип отделки.</p>
+<form class="stack" method="post" action="/inspection/projects">
+  <%- include('../partials/csrf') %>
+  <div class="field">
+    <label for="title">Название</label>
+    <input id="title" name="title" value="<%= values.title %>" required maxlength="120" placeholder="ЖК Северный, кв. 125">
+    <% if (errors.title) { %><p class="field-error"><%= errors.title %></p><% } %>
+  </div>
+  <div class="field">
+    <label for="address">Адрес</label>
+    <input id="address" name="address" value="<%= values.address %>" required maxlength="200">
+    <% if (errors.address) { %><p class="field-error"><%= errors.address %></p><% } %>
+  </div>
+  <div class="field">
+    <label for="residential_complex">ЖК</label>
+    <input id="residential_complex" name="residential_complex" value="<%= values.residential_complex %>" maxlength="120">
+  </div>
+  <div class="field">
+    <label for="apartment_number">Квартира / помещение</label>
+    <input id="apartment_number" name="apartment_number" value="<%= values.apartment_number %>" maxlength="40">
+  </div>
+  <div class="field">
+    <label for="area_m2">Площадь, м²</label>
+    <input id="area_m2" name="area_m2" value="<%= values.area_m2 %>" inputmode="decimal">
+    <% if (errors.area_m2) { %><p class="field-error"><%= errors.area_m2 %></p><% } %>
+  </div>
+  <fieldset>
+    <legend>Тип помещения</legend>
+    <% Object.keys(PROPERTY_TYPES).forEach(function (key) { %>
+      <label class="choice"><input type="radio" name="property_type" value="<%= key %>" <%= values.property_type === key ? 'checked' : '' %>> <%= PROPERTY_TYPES[key] %></label>
+    <% }) %>
+    <% if (errors.property_type) { %><p class="field-error"><%= errors.property_type %></p><% } %>
+  </fieldset>
+  <fieldset>
+    <legend>Отделка</legend>
+    <% Object.keys(FINISH_TYPES).forEach(function (key) { %>
+      <label class="choice"><input type="radio" name="finish_type" value="<%= key %>" <%= values.finish_type === key ? 'checked' : '' %>> <%= FINISH_TYPES[key] %></label>
+    <% }) %>
+    <% if (errors.finish_type) { %><p class="field-error"><%= errors.finish_type %></p><% } %>
+  </fieldset>
+  <div class="field">
+    <label for="developer">Застройщик / собственник</label>
+    <input id="developer" name="developer" value="<%= values.developer %>" maxlength="120">
+  </div>
+  <button class="btn" type="submit">Далее</button>
+</form>
+<p class="aside"><a href="/inspection">К списку</a></p>
+<%- include('../partials/foot') %>

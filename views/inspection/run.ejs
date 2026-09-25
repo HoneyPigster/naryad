@@ -1,0 +1,90 @@
+<%- include('../partials/head', { title }) %>
+<div class="obj-head">
+  <div>
+    <p class="kicker">Осмотр</p>
+    <h1><%= inspection.title %></h1>
+    <p class="meta"><%= INSPECTION_STATUS[inspection.status] %> · проверено <%= progress.checked %> / <%= progress.total %></p>
+  </div>
+  <p class="debt">
+    <span class="debt-label">Прогресс</span>
+    <span class="debt-sum num"><%= progress.percent %>%</span>
+  </p>
+</div>
+<div class="progress-bar" aria-hidden="true"><span class="progress-fill pct-<%= Math.min(100, Math.round((progress.percent || 0) / 5) * 5) %>"></span></div>
+<p class="meta">Замечаний (пункты): <%= progress.defect %> · OK: <%= progress.ok %> · Н/П: <%= progress.na %> · не проверено: <%= progress.unchecked %></p>
+
+<nav class="rooms" aria-label="Помещения">
+  <a href="/inspection/runs/<%= inspection.id %>" class="<%= !roomId ? 'is-on' : '' %>">Общее</a>
+  <% rooms.forEach(function (room) { %>
+    <a href="/inspection/runs/<%= inspection.id %>?room=<%= room.id %>" class="<%= roomId === room.id ? 'is-on' : '' %>">
+      <%= room.name %>
+      <% const rp = byRoom[room.id]; if (rp) { %> · <%= rp.percent %>%<% } %>
+    </a>
+  <% }) %>
+</nav>
+
+<section class="section">
+  <h2><%= roomId ? (rooms.find(r => r.id === roomId) || {}).name : 'Общие проверки' %></h2>
+  <% if (!results.length) { %>
+    <p class="empty">Нет пунктов для этого раздела.</p>
+  <% } %>
+  <ul class="plain">
+    <% results.forEach(function (row) { %>
+      <li>
+        <p><strong><%= row.title %></strong></p>
+        <% if (row.instruction) { %><p class="meta"><%= row.instruction %></p><% } %>
+        <p class="status-line"><span class="status"><%= ITEM_RESULTS[row.result] %></span></p>
+        <% if (inspection.status === 'IN_PROGRESS' || inspection.status === 'PAUSED') { %>
+          <div class="check-actions">
+            <form method="post" action="/inspection/runs/<%= inspection.id %>/results/<%= row.id %>">
+              <%- include('../partials/csrf') %>
+              <input type="hidden" name="result" value="OK">
+              <% if (roomId) { %><input type="hidden" name="room_id" value="<%= roomId %>"><% } %>
+              <button class="btn secondary" type="submit">✓ Всё в порядке</button>
+            </form>
+            <form method="post" action="/inspection/runs/<%= inspection.id %>/results/<%= row.id %>">
+              <%- include('../partials/csrf') %>
+              <input type="hidden" name="result" value="DEFECT">
+              <% if (roomId) { %><input type="hidden" name="room_id" value="<%= roomId %>"><% } %>
+              <button class="btn" type="submit">⚠ Есть замечание</button>
+            </form>
+            <form method="post" action="/inspection/runs/<%= inspection.id %>/results/<%= row.id %>">
+              <%- include('../partials/csrf') %>
+              <input type="hidden" name="result" value="NA">
+              <% if (roomId) { %><input type="hidden" name="room_id" value="<%= roomId %>"><% } %>
+              <button class="text-btn" type="submit">— Н/П</button>
+            </form>
+          </div>
+        <% } %>
+      </li>
+    <% }) %>
+  </ul>
+</section>
+
+<% if (defects.length) { %>
+<section class="section">
+  <h2>Дефекты <span class="num"><%= defects.length %></span></h2>
+  <div class="rows">
+    <% defects.forEach(function (d) { %>
+      <a class="row" href="/inspection/defects/<%= d.id %>">
+        <div>
+          <div class="row-title"><%= d.title %></div>
+          <div class="row-meta"><%= d.room_name || 'Общее' %> · <%= SEVERITIES[d.severity] %></div>
+        </div>
+        <div class="row-status"><%= DEFECT_STATUSES[d.status] %></div>
+      </a>
+    <% }) %>
+  </div>
+</section>
+<% } %>
+
+<div class="sticky-actions actions">
+  <a class="btn secondary" href="/inspection/projects/<%= inspection.project_id %>">К объекту</a>
+  <% if (inspection.status === 'IN_PROGRESS' || inspection.status === 'PAUSED') { %>
+    <a class="btn" href="/inspection/runs/<%= inspection.id %>/defects/new<%= roomId ? ('?room=' + roomId) : '' %>">Добавить дефект</a>
+    <a class="btn" href="/inspection/runs/<%= inspection.id %>/review">К завершению</a>
+  <% } else { %>
+    <a class="btn" href="/inspection/runs/<%= inspection.id %>/summary">Итоги</a>
+  <% } %>
+</div>
+<%- include('../partials/foot') %>

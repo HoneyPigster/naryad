@@ -5,7 +5,9 @@
   "description": "Наряд — заявки на ремонт, кабинет прораба и мастеров",
   "scripts": {
     "start": "node src/server.js",
-    "verify": "node scripts/verify-flow.js"
+    "verify": "node scripts/verify-flow.js",
+    "verify:inspection": "node scripts/verify-inspection-flow.js",
+    "test:unit": "node --test test/*.test.js"
   },
   "engines": {
     "node": ">=22.14.0"
@@ -17,6 +19,7 @@
     "express": "^4.21.2",
     "express-session": "^1.18.1",
     "multer": "^2.0.2",
+    "pdfkit": "^0.17.2",
     "pg": "^8.16.0"
   }
 }

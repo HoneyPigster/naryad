@@ -11,6 +11,7 @@
     <form method="post" action="/login/<%= role %>" class="stack">
       <%- include('partials/csrf') %>
       <input type="hidden" name="role" value="<%= role %>">
+      <% if (values.next) { %><input type="hidden" name="next" value="<%= values.next %>"><% } %>
       <div class="field">
         <label for="phone">Телефон</label>
         <input id="phone" name="phone" type="tel" inputmode="tel" autocomplete="tel" required placeholder="+7 900 000-00-00" value="<%= values.phone %>" <%= values.phone ? '' : 'autofocus' %>>
