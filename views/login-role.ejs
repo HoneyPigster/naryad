@@ -28,9 +28,7 @@
       <button class="btn" type="submit">Войти</button>
       <p class="hint">Нет кабинета? <a href="/register/<%= role %>">Регистрация</a></p>
     </form>
-    <% if (role === 'foreman' || role === 'master') { %>
-      <%- include('partials/demo', { demoRole: role }) %>
-    <% } %>
+    <%- include('partials/demo', { demoRole: role }) %>
   </div>
 </div>
 <%- include('partials/foot') %>

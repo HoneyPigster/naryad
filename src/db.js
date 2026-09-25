@@ -24,6 +24,8 @@ async function migrate() {
   await pool.query(inspectionSql);
   const { seedInspectionCatalog } = require('./inspection/seed');
   await seedInspectionCatalog(pool);
+  const { seedDemoUsers } = require('./seed-demo');
+  await seedDemoUsers(pool);
 }
 
 async function withTx(fn) {
