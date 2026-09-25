@@ -10,7 +10,7 @@
 **Backup tag:** `baseline-before-inspection-feature`  
 **Local archive:** `backups/naryad-baseline-before-inspection-20260925-194916.tar.gz` (~588K, excludes `node_modules`/`.git`/`backups`)
 
-This document describes the **current** production-synced tree. It does **not** implement «Приёмка». No inspection tables, routes, or views exist on this baseline.
+**Historical audit of the pre-Приёмка baseline** (`f508172`). On current `main`, «Приёмка» is implemented (role `inspector`, routes `/inspection`, schema, PDF). Keep this file as the NAR-INS-001 snapshot; do not treat it as the live product description.
 
 ---
 
