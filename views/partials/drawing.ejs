@@ -5,8 +5,9 @@
     inspector: 'Специалист по приёмке с чек-листом в готовой квартире'
   };
   var alt = alts[role] || 'Иллюстрация роли';
+  var cache = '21';
 %>
 <picture class="draw draw-<%= role %>">
-  <source type="image/webp" srcset="/drawings/<%= role %>.webp">
-  <img src="/drawings/<%= role %>.jpg" width="600" height="500" alt="<%= alt %>" decoding="async">
+  <source type="image/webp" srcset="/drawings/<%= role %>.webp?v=<%= cache %>">
+  <img src="/drawings/<%= role %>.jpg?v=<%= cache %>" width="600" height="500" alt="<%= alt %>" decoding="async">
 </picture>
