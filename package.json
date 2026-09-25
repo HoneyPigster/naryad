@@ -2,7 +2,7 @@
   "name": "naryad",
   "version": "1.0.0",
   "private": true,
-  "description": "Наряд — заявки на ремонт, кабинет прораба и мастеров",
+  "description": "Наряд — заявки на ремонт, кабинеты прораба, мастера и приёмки",
   "scripts": {
     "start": "node src/server.js",
     "verify": "node scripts/verify-flow.js",

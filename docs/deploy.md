@@ -2,6 +2,8 @@
 
 Сервер вы готовите сами: Ubuntu 24.04, Docker Engine и плагин Compose, открытые порты 80 и 443. Если будет домен — A-запись на этот сервер. Этот файл ничего на сервере не устанавливает и не заходит по SSH.
 
+Прод сейчас: `masterprorab.ru` → `109.172.37.155`, код в `/opt/naryad`.
+
 ## Команда
 
 В каталоге проекта, когда файл `.env` уже заполнен:
@@ -13,7 +15,7 @@ docker compose up -d --build
 ## Каталог
 
 ```bash
-git clone https://github.com/ryvkingleb-oss/naryad.git
+git clone https://github.com/HoneyPigster/naryad.git
 cd naryad
 cp .env.example .env
 ```
@@ -26,7 +28,7 @@ cp .env.example .env
 
 - `POSTGRES_PASSWORD` — пароль базы. Без символов `@ : / # ? &`.
 - `SESSION_SECRET` — длинная случайная строка для сессий. Удобно взять `openssl rand -hex 32`.
-- `SITE_ADDRESS` — домен без схемы, например `naryad.example.ru`, либо `:80`, если домена нет.
+- `SITE_ADDRESS` — домен без схемы, например `masterprorab.ru`, либо `:80`, если домена нет.
 - `ACME_EMAIL` — почта для Let's Encrypt. Нужна, когда `SITE_ADDRESS` — домен.
 - `COOKIE_SECURE` — `1`, если заходите по https. `0`, если сайт только по http (`:80`). Иначе браузер не сохранит вход.
 - `PHOTO_DIR` — в контейнере оставьте `/data/photos`.
@@ -61,16 +63,24 @@ curl -fsS http://127.0.0.1/health
 
 С доменом: `curl -fsS https://ваш-домен/health`. Ответ: `ok`.
 
-Дальше откройте сайт, зарегистрируйте клиента, прораба и мастера и пройдите заявку: клиент → объект прораба → вызов мастера → мастер принял.
+Дальше откройте сайт, зарегистрируйте клиента, прораба, мастера или кабинет приёмки и пройдите свой сценарий.
 
-## Обновление
+## Обновление (обязательно с бэкапом)
+
+В родительском каталоге проекта (например `/opt`):
 
 ```bash
+STAMP=$(date +%Y%m%d-%H%M%S)
+cp -a naryad "naryad.bak.$STAMP"
+cd naryad
+docker compose exec -T db pg_dump -U naryad naryad > "backup-$STAMP.sql"
+# фото: скопируйте том naryad_photos или архивируйте его каталог
+ls -lh "backup-$STAMP.sql" "../naryad.bak.$STAMP"
 git pull
 docker compose up -d --build
 ```
 
-Тома с базой и фото при этом не удаляются. Команда `docker compose down -v` стирает тома — на рабочем сервере её не использовать.
+Тома с базой и фото при этом не удаляются. Команда `docker compose down -v` стирает тома — на рабочем сервере её **не** использовать.
 
 ## Копии
 
