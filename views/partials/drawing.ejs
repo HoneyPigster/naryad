@@ -1,11 +1,12 @@
-<% if (role === 'inspector') { %>
-  <div class="draw draw-inspector" aria-hidden="true">
-    <span class="draw-inspector-mark">Пр</span>
-    <span class="draw-inspector-caption">Приёмка</span>
-  </div>
-<% } else { %>
+<%
+  var alts = {
+    foreman: 'Прораб у дома с планшетом',
+    master: 'Мастер с инструментом',
+    inspector: 'Специалист по приёмке с чек-листом в готовой квартире'
+  };
+  var alt = alts[role] || 'Иллюстрация роли';
+%>
 <picture class="draw draw-<%= role %>">
   <source type="image/webp" srcset="/drawings/<%= role %>.webp">
-  <img src="/drawings/<%= role %>.jpg" width="600" height="500" alt="<%= role === 'foreman' ? 'Прораб у дома с планшетом' : 'Мастер с инструментом' %>" decoding="async">
+  <img src="/drawings/<%= role %>.jpg" width="600" height="500" alt="<%= alt %>" decoding="async">
 </picture>
-<% } %>
